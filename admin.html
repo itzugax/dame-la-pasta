@@ -13,108 +13,120 @@
             --red:#ff3131; --purple:#a020f0; --pink:#ff69b4; --blue:#4488ff;
         }
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{width:100%;height:100%;background:var(--bg);color:white;font-family:'Inter',sans-serif;overflow:hidden;}
-        body{display:flex;flex-direction:column;}
+        html,body{width:100%;height:100%;background:var(--bg);color:white;font-family:'Inter',sans-serif;}
+        body{display:flex;flex-direction:column;overflow:hidden;}
 
         /* TOPBAR */
-        #topbar{background:#000;border-bottom:2px solid var(--gold);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;}
-        #topbar h1{font-family:'Bebas Neue';font-size:1.4rem;color:var(--gold);letter-spacing:3px;}
-        .scores{display:flex;gap:12px;}
-        .score-pill{font-family:'Bebas Neue';font-size:1.1rem;padding:3px 12px;border-radius:20px;border:2px solid;}
-        #conn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:5px;transition:.3s;}
+        #topbar{background:#000;border-bottom:2px solid var(--gold);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 12px;height:48px;}
+        #topbar h1{font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold);letter-spacing:2px;}
+        .scores{display:flex;gap:8px;}
+        .score-pill{font-family:'Bebas Neue';font-size:1rem;padding:2px 10px;border-radius:20px;border:2px solid;}
+        #conn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:4px;transition:.3s;}
         #conn-dot.on{background:var(--green);box-shadow:0 0 6px var(--green);}
-        #conn-status{font-size:.7rem;opacity:.6;}
+        #conn-status{font-size:.65rem;opacity:.6;}
 
         /* TABS */
         #tabs{display:flex;background:#000;border-bottom:1px solid var(--border);flex-shrink:0;}
-        .tab{padding:10px 20px;cursor:pointer;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#555;border-bottom:3px solid transparent;transition:.2s;}
+        .tab{flex:1;padding:11px 8px;cursor:pointer;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#555;border-bottom:3px solid transparent;transition:.2s;text-align:center;}
         .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 
-        /* BODY */
-        #body-wrap{display:flex;flex:1;min-height:0;}
+        /* ── LAYOUT MÓVIL: columna única ── */
+        #body-wrap{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 
-        /* TABLERO */
-        #board-wrap{flex:1;min-width:0;padding:1vw;display:flex;flex-direction:column;gap:.6vh;background:#04063a;}
-        #board-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.7vw;flex:1;min-height:0;}
-        .b-col{display:flex;flex-direction:column;gap:.5vh;min-height:0;}
-        .b-header{background:transparent;color:white;text-align:center;font-family:'Bebas Neue';font-size:clamp(.6rem,1.3vw,1.4rem);padding:.5vh .3vw;line-height:1.1;flex-shrink:0;}
-        .b-cell{background:#1a22b8;border:2px solid #00aaff;color:var(--gold);font-family:'Bebas Neue';font-size:clamp(.9rem,2.5vw,3rem);flex:1;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;transition:.2s;min-height:0;box-shadow:0 0 8px rgba(0,170,255,.2);}
-        .b-cell:hover{background:#2530d0;border-color:white;transform:scale(1.04);}
-        .b-cell.used{opacity:.1;pointer-events:none;}
-        .b-cell.active-q{border-color:var(--gold);background:rgba(245,197,24,.15);box-shadow:0 0 14px rgba(245,197,24,.4);}
-        .b-cell.no-q{opacity:.15;pointer-events:none;border-color:#333;}
+        /* TABLERO — compacto arriba */
+        #board-wrap{background:#04063a;padding:6px;flex-shrink:0;}
+        #board-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
+        .b-col{display:flex;flex-direction:column;gap:3px;}
+        .b-header{color:white;text-align:center;font-family:'Bebas Neue';font-size:clamp(.55rem,2.2vw,1rem);padding:3px 1px;line-height:1.1;flex-shrink:0;}
+        .b-cell{background:#1a22b8;border:2px solid #00aaff;color:var(--gold);font-family:'Bebas Neue';font-size:clamp(.8rem,3.5vw,1.6rem);height:clamp(36px,8vw,56px);display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;transition:.15s;box-shadow:0 0 6px rgba(0,170,255,.2);}
+        .b-cell:active{transform:scale(.93);background:#2530d0;}
+        .b-cell.used{opacity:.15;pointer-events:none;}
+        .b-cell.active-q{border-color:var(--gold);background:rgba(245,197,24,.15);box-shadow:0 0 12px rgba(245,197,24,.4);}
+        .b-cell.no-q{opacity:.12;pointer-events:none;border-color:#333;}
 
-        /* PANEL DERECHO */
-        #ctrl-panel{width:290px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+        /* PANEL — scroll vertical debajo del tablero */
+        #ctrl-panel{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
         #ctrl-panel::-webkit-scrollbar{width:3px;}
         #ctrl-panel::-webkit-scrollbar-thumb{background:var(--border);}
-        .section{padding:11px 13px;border-bottom:1px solid var(--border);}
-        .section-title{font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:7px;opacity:.8;}
-        .btn-row{display:flex;gap:5px;flex-wrap:wrap;}
-        .btn{padding:7px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;transition:all .15s;flex:1;min-width:70px;}
-        .btn:active{transform:scale(.95);}
+
+        .section{padding:12px 14px;border-bottom:1px solid var(--border);}
+        .section-title{font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:8px;opacity:.8;}
+        .btn-row{display:flex;gap:6px;flex-wrap:wrap;}
+
+        /* Botones grandes para dedos */
+        .btn{padding:12px 10px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;transition:all .1s;flex:1;min-width:80px;min-height:44px;}
+        .btn:active{transform:scale(.94);}
         .btn-neon{background:var(--neon);color:#000;}
         .btn-gold{background:var(--gold);color:#000;}
         .btn-red{background:var(--red);color:#fff;}
         .btn-green{background:var(--green);color:#000;}
         .btn-dark{background:#141820;color:#fff;border:1px solid var(--border);}
         .btn-purple{background:var(--purple);color:#fff;}
-        #m-title{font-family:'Bebas Neue';font-size:1rem;color:var(--gold);margin-bottom:4px;}
-        #m-txt{font-size:.78rem;color:#ddd;line-height:1.4;padding:7px;background:#0a0a0a;border-radius:7px;border-left:3px solid var(--neon);margin-bottom:5px;}
-        #m-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:3px;}
-        .opt-preview{padding:5px 7px;background:#111;border:1px solid var(--border);border-radius:7px;font-size:.72rem;color:#aaa;}
+
+        #m-title{font-family:'Bebas Neue';font-size:1.1rem;color:var(--gold);margin-bottom:4px;}
+        #m-txt{font-size:.82rem;color:#ddd;line-height:1.4;padding:8px;background:#0a0a0a;border-radius:8px;border-left:3px solid var(--neon);margin-bottom:6px;}
+        #m-opts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px;}
+        .opt-preview{padding:7px 8px;background:#111;border:1px solid var(--border);border-radius:8px;font-size:.78rem;color:#aaa;}
         .opt-preview b{color:var(--gold);}
-        #who-name{font-family:'Bebas Neue';font-size:1.4rem;text-align:center;padding:9px;border-radius:9px;background:#000;border:2px solid var(--neon);color:var(--neon);letter-spacing:2px;margin-bottom:7px;}
+
+        #who-name{font-family:'Bebas Neue';font-size:1.6rem;text-align:center;padding:12px;border-radius:10px;background:#000;border:2px solid var(--neon);color:var(--neon);letter-spacing:2px;margin-bottom:8px;}
         @keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(0,242,255,.5);}50%{box-shadow:0 0 0 8px rgba(0,242,255,0);}}
         #who-name.pulsing{animation:pulse-border .9s infinite;}
-        #sec-input,#comodin-sec,#pts-amount{background:#111;color:white;border:1px solid var(--border);padding:6px;border-radius:8px;font-size:.85rem;text-align:center;}
-        #sec-input{width:52px;} #comodin-sec{width:52px;} #pts-amount{width:100%;margin-bottom:5px;}
-        #live-timer{font-family:'Bebas Neue';font-size:1.5rem;color:var(--gold);min-width:36px;}
-        .pts-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;}
-        .pts-btn{padding:6px 3px;border-radius:7px;border:2px solid var(--border);background:#111;color:white;cursor:pointer;font-weight:700;font-size:.7rem;text-align:center;transition:.15s;}
-        .pts-btn:hover{border-color:var(--gold);}
-        #reset-confirm{display:none;background:#1a0000;border:1px solid var(--red);border-radius:9px;padding:9px;text-align:center;margin-top:7px;}
-        #reset-confirm p{font-size:.75rem;margin-bottom:7px;color:#ff9999;}
-        .tv-grid2{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
 
-        /* EDITOR DE PREGUNTAS */
-        #editor-wrap{flex:1;min-width:0;padding:16px;overflow-y:auto;display:none;flex-direction:column;gap:12px;}
-        #editor-wrap::-webkit-scrollbar{width:4px;}
-        #editor-wrap::-webkit-scrollbar-thumb{background:var(--border);}
-        .eq-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;}
-        .eq-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-        .eq-cat{font-family:'Bebas Neue';font-size:1rem;color:var(--neon);}
-        .eq-pts{font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold);}
-        .eq-txt{font-size:.82rem;color:#ccc;margin-bottom:6px;}
-        .eq-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
-        .eq-opt{font-size:.75rem;padding:4px 7px;background:#111;border-radius:6px;border:1px solid var(--border);}
-        .eq-opt.correct{border-color:var(--green);color:var(--green);}
-        .eq-actions{display:flex;gap:5px;margin-top:8px;}
-
-        /* MODAL EDITOR */
-        #modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;align-items:center;justify-content:center;}
-        #modal{background:#0e1219;border:1px solid var(--border);border-radius:16px;padding:20px;width:min(500px,95vw);max-height:90vh;overflow-y:auto;}
-        #modal h2{font-family:'Bebas Neue';color:var(--gold);font-size:1.4rem;margin-bottom:14px;}
-        .field{margin-bottom:10px;}
-        .field label{display:block;font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-        .field input,.field select{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.88rem;}
-        .field input:focus,.field select:focus{outline:none;border-color:var(--neon);}
-        .opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-        /* TIMER EXTRA */
+        /* Inputs grandes */
+        #sec-input,#comodin-sec,#pts-amount{background:#111;color:white;border:1px solid var(--border);padding:10px;border-radius:10px;font-size:1rem;text-align:center;}
+        #sec-input{width:64px;} #comodin-sec{width:64px;} #pts-amount{width:100%;margin-bottom:6px;}
+        #live-timer{font-family:'Bebas Neue';font-size:1.8rem;color:var(--gold);min-width:40px;}
         #timer-state{font-size:.65rem;color:#888;text-align:center;margin-top:3px;}
-        .timer-paused #live-timer{color:var(--neon) !important;animation:blink .8s infinite;}
         @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
 
+        .pts-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+        .pts-btn{padding:10px 4px;border-radius:9px;border:2px solid var(--border);background:#111;color:white;cursor:pointer;font-weight:700;font-size:.78rem;text-align:center;transition:.1s;min-height:44px;}
+        .pts-btn:active{transform:scale(.93);}
+
+        #reset-confirm{display:none;background:#1a0000;border:1px solid var(--red);border-radius:10px;padding:10px;text-align:center;margin-top:8px;}
+        #reset-confirm p{font-size:.8rem;margin-bottom:8px;color:#ff9999;}
+        .tv-grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+
+        /* EDITOR */
+        #editor-wrap{flex:1;padding:14px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;flex-direction:column;gap:10px;}
+        .eq-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;}
+        .eq-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+        .eq-pts{font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold);}
+        .eq-txt{font-size:.84rem;color:#ccc;margin-bottom:6px;}
+        .eq-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+        .eq-opt{font-size:.76rem;padding:5px 8px;background:#111;border-radius:6px;border:1px solid var(--border);}
+        .eq-opt.correct{border-color:var(--green);color:var(--green);}
+
+        /* MODAL */
+        #modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:none;align-items:flex-end;justify-content:center;}
+        #modal{background:#0e1219;border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+        #modal h2{font-family:'Bebas Neue';color:var(--gold);font-size:1.4rem;margin-bottom:14px;}
+        .field{margin-bottom:12px;}
+        .field label{display:block;font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+        .field input,.field select{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:1rem;}
+        .field input:focus,.field select:focus{outline:none;border-color:var(--neon);}
+        .opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
         /* NOTAS */
-        #notes-area{width:100%;background:#0a0a0a;color:#ccc;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.78rem;resize:none;font-family:'Inter';}
+        #notes-area{width:100%;background:#0a0a0a;color:#ccc;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:.85rem;resize:none;font-family:'Inter';}
 
         /* HISTORIAL */
-        .hist-item{font-size:.7rem;padding:4px 6px;border-radius:6px;background:#111;border-left:3px solid var(--border);margin-bottom:3px;color:#aaa;}
+        .hist-item{font-size:.75rem;padding:6px 8px;border-radius:7px;background:#111;border-left:3px solid var(--border);margin-bottom:4px;color:#aaa;}
         .hist-item.correct{border-left-color:var(--green);}
         .hist-item.wrong{border-left-color:var(--red);}
 
-        /* MODO OSCURO TOTAL */
-        .blackout-active #board-wrap{filter:brightness(0);}
+        /* PC: layout horizontal cuando hay espacio */
+        @media (min-width: 768px) {
+            #body-wrap{flex-direction:row;}
+            #board-wrap{flex:1;padding:1vw;display:flex;flex-direction:column;}
+            #board-grid{flex:1;gap:.6vw;}
+            .b-cell{height:auto;flex:1;}
+            .b-header{font-size:clamp(.6rem,1.3vw,1.2rem);}
+            #ctrl-panel{width:300px;flex-shrink:0;border-left:1px solid var(--border);}
+            #modal-bg{align-items:center;}
+            #modal{border-radius:16px;width:min(500px,95vw);max-height:90vh;}
+        }
 </style>
 </head>
 <body>
@@ -323,10 +335,27 @@
             <button class="btn btn-dark" style="width:100%;margin-top:5px;font-size:.65rem;" onclick="document.getElementById('hist-list').innerHTML=''">Limpiar</button>
         </div>
 
+        <!-- SINCRONIZACIÓN GIST -->
+        <div class="section">
+            <div class="section-title">☁️ Sincronización (GitHub Gist)</div>
+            <div class="field" style="margin-bottom:6px;">
+                <label style="font-size:.65rem;color:#888;">Gist ID</label>
+                <input id="cfg-gist-id" placeholder="abc123..." value="" style="background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.8rem;width:100%;">
+            </div>
+            <div class="field" style="margin-bottom:6px;">
+                <label style="font-size:.65rem;color:#888;">GitHub Token</label>
+                <input id="cfg-gist-token" type="password" placeholder="ghp_..." value="" style="background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.8rem;width:100%;">
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-neon" onclick="saveGistConfig()">💾 Guardar config</button>
+                <button class="btn btn-dark" onclick="createGist()">✨ Crear Gist</button>
+            </div>
+            <div id="gist-status" style="font-size:.68rem;color:#555;margin-top:5px;"></div>
+        </div>
+
         <!-- RESET -->
         <div class="section">
-            <div class="section-title">⚠️ Peligro</div>
-            <div class="btn-row" style="margin-bottom:5px;">
+            <div class="section-title">⚠️ Peligro</div>            <div class="btn-row" style="margin-bottom:5px;">
                 <button class="btn btn-dark" onclick="toggleBlackout()">🌑 Blackout TV</button>
                 <button class="btn btn-dark" onclick="pub('tv',{type:'message',text:'¡VOLVEMOS EN UN MOMENTO!'})">⏸ Pausa show</button>
             </div>
@@ -444,9 +473,67 @@ function updateAdminScores() {
     pub('tv', {type:'scores', vals: scores});
 }
 
-// ── PREGUNTAS: GUARDAR EN ABLY (history) ──
-// Usamos localStorage como almacén principal (persiste entre reinicios del sistema)
-// y Ably para sincronizar entre dispositivos en tiempo real
+// ── PREGUNTAS: GIST + ABLY ──
+// Configuración — rellena esto una vez
+const GIST_TOKEN = localStorage.getItem('nexus_gist_token') || '';
+const GIST_ID    = localStorage.getItem('nexus_gist_id')    || '';
+
+function saveGistConfig() {
+    const id    = document.getElementById('cfg-gist-id').value.trim();
+    const token = document.getElementById('cfg-gist-token').value.trim();
+    if(id)    localStorage.setItem('nexus_gist_id', id);
+    if(token) localStorage.setItem('nexus_gist_token', token);
+    document.getElementById('gist-status').innerText = '✅ Guardado. Recarga para aplicar.';
+}
+
+async function createGist() {
+    const token = document.getElementById('cfg-gist-token').value.trim()
+                  || localStorage.getItem('nexus_gist_token');
+    if(!token) return document.getElementById('gist-status').innerText = '⚠️ Necesitas el token primero';
+    document.getElementById('gist-status').innerText = 'Creando Gist...';
+    try {
+        const r = await fetch('https://api.github.com/gists', {
+            method: 'POST',
+            headers: {Authorization:`token ${token}`, 'Content-Type':'application/json'},
+            body: JSON.stringify({
+                description: 'Nexus — Preguntas del show',
+                public: false,
+                files: {'nexus_questions.json': {content: JSON.stringify(questions.length ? questions : [])}}
+            })
+        });
+        if(!r.ok) throw new Error(r.status);
+        const data = await r.json();
+        localStorage.setItem('nexus_gist_id', data.id);
+        document.getElementById('cfg-gist-id').value = data.id;
+        document.getElementById('gist-status').innerText = `✅ Gist creado: ${data.id}`;
+    } catch(e) {
+        document.getElementById('gist-status').innerText = `❌ Error: ${e.message}`;
+    }
+}
+
+async function gistLoad() {
+    if(!GIST_ID) return null;
+    try {
+        const r = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            headers: GIST_TOKEN ? {Authorization: `token ${GIST_TOKEN}`} : {}
+        });
+        if(!r.ok) return null;
+        const data = await r.json();
+        const content = data.files['nexus_questions.json']?.content;
+        return content ? JSON.parse(content) : null;
+    } catch(e) { return null; }
+}
+
+async function gistSave(qs) {
+    if(!GIST_ID || !GIST_TOKEN) return;
+    try {
+        await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            method: 'PATCH',
+            headers: {Authorization: `token ${GIST_TOKEN}`, 'Content-Type':'application/json'},
+            body: JSON.stringify({files:{'nexus_questions.json':{content: JSON.stringify(qs)}}})
+        });
+    } catch(e) {}
+}
 
 function loadQuestions() {
     const saved = localStorage.getItem('nexus_questions');
@@ -455,24 +542,45 @@ function loadQuestions() {
         rebuildFromQuestions();
         buildBoard();
         syncTV();
+        // Actualizar desde Gist en segundo plano por si hay cambios
+        if(GIST_ID) gistLoad().then(qs => {
+            if(qs && JSON.stringify(qs) !== JSON.stringify(questions)) {
+                questions = qs;
+                localStorage.setItem('nexus_questions', JSON.stringify(qs));
+                rebuildFromQuestions(); buildBoard(); syncTV();
+            }
+        });
     } else {
-        // localStorage vacío (nuevo origen) — pedir historial a Ably
-        chData.history({limit:1}, (err, page) => {
-            if(!err && page.items.length > 0) {
-                questions = page.items[0].data;
-                localStorage.setItem('nexus_questions', JSON.stringify(questions));
-                rebuildFromQuestions();
-                buildBoard();
-                syncTV();
+        document.getElementById('board-grid').innerHTML =
+            '<div style="grid-column:1/-1;color:var(--neon);font-size:.8rem;padding:20px;text-align:center;">⏳ Cargando preguntas...</div>';
+        // 1. Intentar Gist
+        gistLoad().then(qs => {
+            if(qs && qs.length) {
+                questions = qs;
+                localStorage.setItem('nexus_questions', JSON.stringify(qs));
+                rebuildFromQuestions(); buildBoard(); syncTV();
+            } else {
+                // 2. Pedir a otros admins
+                channel.publish('request_questions', {});
+                setTimeout(() => {
+                    if(!questions.length)
+                        document.getElementById('board-grid').innerHTML =
+                            '<div style="grid-column:1/-1;color:#555;font-size:.8rem;padding:20px;text-align:center;">Ve a <b style="color:var(--neon)">✏️ PREGUNTAS</b> para añadir preguntas</div>';
+                }, 3000);
             }
         });
     }
 }
 
+// Responder cuando otro dispositivo pide las preguntas
+channel.subscribe('request_questions', () => {
+    if(questions.length > 0) chData.publish('questions', questions);
+});
+
 function saveQuestions() {
     localStorage.setItem('nexus_questions', JSON.stringify(questions));
-    // Publicar a todos los dispositivos
     chData.publish('questions', questions);
+    gistSave(questions);
 }
 
 // Escuchar cambios de preguntas desde otros dispositivos
@@ -942,6 +1050,19 @@ channel.subscribe('request_sync', () => {
 
 // ── INIT ──
 window.onload = () => {
+    // Si no hay token, pedir al usuario que lo introduzca
+    if(!localStorage.getItem('nexus_gist_token')) {
+        const token = prompt('🔑 Introduce tu GitHub Token para sincronizar preguntas:\n(Solo se pide una vez)');
+        if(token && token.trim()) {
+            localStorage.setItem('nexus_gist_token', token.trim());
+        }
+    }
+
+    // Rellenar config de Gist si existe
+    const gid = localStorage.getItem('nexus_gist_id');
+    const gtok = localStorage.getItem('nexus_gist_token');
+    if(gid)  document.getElementById('cfg-gist-id').value = gid;
+    if(gtok) document.getElementById('cfg-gist-token').value = gtok;
     loadQuestions();
     buildBoard();
     updateAdminScores();
