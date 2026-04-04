@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PULSADOR</title>
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: sans-serif; overflow: hidden; }
+        #btn {
+            width: 100%; height: 100%;
+            border: none; background: #333;
+            color: #666; font-size: 8vmin; font-weight: bold;
+            transition: 0.1s; cursor: pointer;
+        }
+        #btn.active {
+            background: #00f2ff; color: white;
+            box-shadow: inset 0 0 10vmin white;
+        }
+    </style>
+</head>
+<body>
+    <button id="btn" disabled>BLOQUEADO</button>
+
+    <script>
+const ably = new Ably.Realtime('hfiiHQ.aSZm9g:kMhwAKjhl_4t-ALEqCv_M_55VJlSYMKunV-PLoJJeVM');
+const channel = ably.channels.get('juego-pasta');
+const params = new URLSearchParams(window.location.search);
+const pId = params.get('p') || 0;
+const names = ["Kinverlys", "María", "Joise"];
+
+const btn = document.getElementById('btn');
+
+// Escucha si el admin habilita los pulsadores
+channel.subscribe('status', (msg) => {
+    if(msg.data === 'open') {
+        btn.disabled = false;
+        btn.classList.add('active');
+        btn.innerText = "¡PULSA YA!";
+    } else if(msg.data === 'close') {
+        btn.disabled = true;
+        btn.classList.remove('active');
+        btn.innerText = "BLOQUEADO";
+    }
+});
+
+// AUTO-RECARGA: Cuando la TV muestra el resultado, el player se resetea
+channel.subscribe('tv', (msg) => {
+    if(msg.data.type === 'feedback') {
+        // Esperamos a que termine la animación de la TV para recargar
+        setTimeout(() => {
+            location.reload(); 
+        }, 4000); 
+    }
+});
+
+btn.onclick = () => {
+    channel.publish('pulso-web', { id: pId, name: names[pId] });
+    btn.disabled = true;
+    btn.classList.remove('active');
+    btn.innerText = "¡ESPERANDO!";
+};
+    </script>
+</body>
+</html>

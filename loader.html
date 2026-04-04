@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS — Cargando</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 100%; height: 100%;
+            background: #04063a;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        h1 {
+            font-family: 'Bebas Neue';
+            font-size: clamp(2rem, 6vw, 5rem);
+            color: #f5c518;
+            letter-spacing: 4px;
+            text-shadow: 0 0 30px rgba(245,197,24,0.6);
+            margin-bottom: 3vh;
+        }
+        #status {
+            font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+            color: #00aaff;
+            margin-bottom: 1.5vh;
+            min-height: 1.4em;
+            letter-spacing: 1px;
+        }
+        #bar-wrap {
+            width: min(500px, 80vw);
+            height: 18px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1.5vh;
+        }
+        #bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #00aaff, #00f2ff);
+            border-radius: 4px;
+            box-shadow: 0 0 20px #00aaff, 0 0 40px rgba(0,170,255,0.5);
+            transition: width 0.4s ease;
+        }
+        #pct {
+            font-family: 'Bebas Neue';
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            color: #00f2ff;
+            margin-bottom: 0.5vh;
+        }
+        #detail {
+            font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+            color: #555;
+            margin-bottom: 3vh;
+        }
+        #btn-skip {
+            padding: 10px 28px;
+            background: transparent;
+            border: 2px solid #333;
+            color: #555;
+            border-radius: 10px;
+            font-family: 'Bebas Neue';
+            font-size: 1rem;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: 0.2s;
+            margin-top: 1vh;
+        }
+        #btn-skip:hover { border-color: #f5c518; color: #f5c518; }
+        #btn-go {
+            display: none;
+            padding: 14px 40px;
+            background: #f5c518;
+            border: none;
+            color: #000;
+            border-radius: 12px;
+            font-family: 'Bebas Neue';
+            font-size: 1.4rem;
+            cursor: pointer;
+            letter-spacing: 3px;
+            box-shadow: 0 0 20px rgba(245,197,24,0.5);
+            transition: 0.2s;
+            margin-top: 2vh;
+        }
+        #btn-go:hover { transform: scale(1.04); }
+        #song-list {
+            width: min(500px, 80vw);
+            max-height: 30vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 2vh;
+        }
+        #song-list::-webkit-scrollbar { width: 3px; }
+        #song-list::-webkit-scrollbar-thumb { background: #333; }
+        .song-row {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid #1e2530;
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 0.8rem;
+        }
+        .song-row .sname { flex: 1; color: #aaa; }
+        .song-row .ssize { color: #555; font-size: 0.72rem; }
+        .song-row .sicon { font-size: 1rem; }
+        .song-row.done   { border-color: #00ff88; }
+        .song-row.done .sname { color: #00ff88; }
+        .song-row.active { border-color: #00aaff; }
+        .song-row.active .sname { color: #00aaff; }
+        .song-row.error  { border-color: #ff3131; }
+        .song-row.error .sname { color: #ff3131; }
+    </style>
+</head>
+<body>
+    <h1>⚡ NEXUS</h1>
+    <div id="status">Preparando canciones...</div>
+    <div id="pct">0%</div>
+    <div id="bar-wrap"><div id="bar"></div></div>
+    <div id="detail"></div>
+    <div id="song-list"></div>
+    <button id="btn-skip" onclick="goTo()">Saltar descarga</button>
+    <button id="btn-go" onclick="goTo()">▶ ENTRAR AL SHOW</button>
+
+<script>
+    // ¿A dónde ir? Detectar si viene de admin o tv
+    const dest = new URLSearchParams(location.search).get('dest') || 'tv.html';
+
+    function goTo() { location.href = dest; }
+
+    async function init() {
+        // Registrar Service Worker
+        if(!('serviceWorker' in navigator)) {
+            document.getElementById('status').innerText = 'Service Worker no soportado — entrando directo';
+            setTimeout(goTo, 1500);
+            return;
+        }
+
+        let reg;
+        try {
+            reg = await navigator.serviceWorker.register('sw.js');
+            await navigator.serviceWorker.ready;
+        } catch(e) {
+            document.getElementById('status').innerText = 'Error SW — entrando directo';
+            setTimeout(goTo, 1500);
+            return;
+        }
+
+        // Cargar lista de canciones
+        let canciones = [];
+        try {
+            const r = await fetch('canciones.json?t='+Date.now());
+            canciones = await r.json();
+        } catch(e) {
+            document.getElementById('status').innerText = 'No se encontró canciones.json — entrando directo';
+            setTimeout(goTo, 1500);
+            return;
+        }
+
+        if(!canciones.length) {
+            document.getElementById('status').innerText = 'Sin canciones configuradas';
+            setTimeout(goTo, 1500);
+            return;
+        }
+
+        // Renderizar lista
+        const list = document.getElementById('song-list');
+        canciones.forEach((c, i) => {
+            const row = document.createElement('div');
+            row.className = 'song-row';
+            row.id = 'sr-'+i;
+            row.innerHTML = `<span class="sicon">🎵</span><span class="sname">${c.nombre}</span><span class="ssize" id="ss-${i}">—</span>`;
+            list.appendChild(row);
+        });
+
+        // Escuchar mensajes del SW
+        navigator.serviceWorker.addEventListener('message', e => {
+            const d = e.data;
+            if(d.type === 'PROGRESS') {
+                const pct = Math.round(d.done / d.total * 100);
+                document.getElementById('bar').style.width = pct + '%';
+                document.getElementById('pct').innerText = pct + '%';
+                document.getElementById('status').innerText = d.error
+                    ? `⚠️ Error: ${d.nombre}`
+                    : `Descargando: ${d.nombre}`;
+                document.getElementById('detail').innerText = d.kb > 0
+                    ? `${d.kb} KB — ${d.done} de ${d.total}`
+                    : `${d.done} de ${d.total}`;
+
+                // Actualizar fila
+                const idx = canciones.findIndex(c => c.archivo === d.archivo);
+                if(idx >= 0) {
+                    const row = document.getElementById('sr-'+idx);
+                    row.className = 'song-row ' + (d.error ? 'error' : 'done');
+                    row.querySelector('.sicon').innerText = d.error ? '❌' : '✅';
+                    document.getElementById('ss-'+idx).innerText = d.kb > 0 ? d.kb+'KB' : 'error';
+                }
+                // Marcar activa la siguiente
+                if(d.done < d.total) {
+                    const next = document.getElementById('sr-'+d.done);
+                    if(next) next.className = 'song-row active';
+                }
+            }
+            if(d.type === 'DONE') {
+                document.getElementById('status').innerText = '✅ Todo listo';
+                document.getElementById('pct').innerText = '100%';
+                document.getElementById('bar').style.width = '100%';
+                document.getElementById('detail').innerText = '';
+                document.getElementById('btn-skip').style.display = 'none';
+                document.getElementById('btn-go').style.display = 'block';
+                setTimeout(goTo, 1500);
+            }
+        });
+
+        // Marcar primera como activa
+        const first = document.getElementById('sr-0');
+        if(first) first.className = 'song-row active';
+
+        // Iniciar descarga
+        const sw = reg.active || reg.installing || reg.waiting;
+        if(sw) {
+            sw.postMessage({type:'PRECACHE', files: canciones});
+        } else {
+            navigator.serviceWorker.controller?.postMessage({type:'PRECACHE', files: canciones});
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

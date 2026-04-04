@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONTROL — NEXUS</title>
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#080b10; --panel:#0e1219; --border:#1e2530;
+            --neon:#00f2ff; --gold:#ffc300; --green:#00ff88;
+            --red:#ff3131; --purple:#a020f0; --pink:#ff69b4; --blue:#4488ff;
+        }
+        *{box-sizing:border-box;margin:0;padding:0;}
+        html,body{width:100%;height:100%;background:var(--bg);color:white;font-family:'Inter',sans-serif;overflow:hidden;}
+        body{display:flex;flex-direction:column;}
+
+        /* TOPBAR */
+        #topbar{background:#000;border-bottom:2px solid var(--gold);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;}
+        #topbar h1{font-family:'Bebas Neue';font-size:1.4rem;color:var(--gold);letter-spacing:3px;}
+        .scores{display:flex;gap:12px;}
+        .score-pill{font-family:'Bebas Neue';font-size:1.1rem;padding:3px 12px;border-radius:20px;border:2px solid;}
+        #conn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:5px;transition:.3s;}
+        #conn-dot.on{background:var(--green);box-shadow:0 0 6px var(--green);}
+        #conn-status{font-size:.7rem;opacity:.6;}
+
+        /* TABS */
+        #tabs{display:flex;background:#000;border-bottom:1px solid var(--border);flex-shrink:0;}
+        .tab{padding:10px 20px;cursor:pointer;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#555;border-bottom:3px solid transparent;transition:.2s;}
+        .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+        /* BODY */
+        #body-wrap{display:flex;flex:1;min-height:0;}
+
+        /* TABLERO */
+        #board-wrap{flex:1;min-width:0;padding:1vw;display:flex;flex-direction:column;gap:.6vh;background:#04063a;}
+        #board-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.7vw;flex:1;min-height:0;}
+        .b-col{display:flex;flex-direction:column;gap:.5vh;min-height:0;}
+        .b-header{background:transparent;color:white;text-align:center;font-family:'Bebas Neue';font-size:clamp(.6rem,1.3vw,1.4rem);padding:.5vh .3vw;line-height:1.1;flex-shrink:0;}
+        .b-cell{background:#1a22b8;border:2px solid #00aaff;color:var(--gold);font-family:'Bebas Neue';font-size:clamp(.9rem,2.5vw,3rem);flex:1;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;transition:.2s;min-height:0;box-shadow:0 0 8px rgba(0,170,255,.2);}
+        .b-cell:hover{background:#2530d0;border-color:white;transform:scale(1.04);}
+        .b-cell.used{opacity:.1;pointer-events:none;}
+        .b-cell.active-q{border-color:var(--gold);background:rgba(245,197,24,.15);box-shadow:0 0 14px rgba(245,197,24,.4);}
+        .b-cell.no-q{opacity:.15;pointer-events:none;border-color:#333;}
+
+        /* PANEL DERECHO */
+        #ctrl-panel{width:290px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+        #ctrl-panel::-webkit-scrollbar{width:3px;}
+        #ctrl-panel::-webkit-scrollbar-thumb{background:var(--border);}
+        .section{padding:11px 13px;border-bottom:1px solid var(--border);}
+        .section-title{font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:7px;opacity:.8;}
+        .btn-row{display:flex;gap:5px;flex-wrap:wrap;}
+        .btn{padding:7px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;transition:all .15s;flex:1;min-width:70px;}
+        .btn:active{transform:scale(.95);}
+        .btn-neon{background:var(--neon);color:#000;}
+        .btn-gold{background:var(--gold);color:#000;}
+        .btn-red{background:var(--red);color:#fff;}
+        .btn-green{background:var(--green);color:#000;}
+        .btn-dark{background:#141820;color:#fff;border:1px solid var(--border);}
+        .btn-purple{background:var(--purple);color:#fff;}
+        #m-title{font-family:'Bebas Neue';font-size:1rem;color:var(--gold);margin-bottom:4px;}
+        #m-txt{font-size:.78rem;color:#ddd;line-height:1.4;padding:7px;background:#0a0a0a;border-radius:7px;border-left:3px solid var(--neon);margin-bottom:5px;}
+        #m-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:3px;}
+        .opt-preview{padding:5px 7px;background:#111;border:1px solid var(--border);border-radius:7px;font-size:.72rem;color:#aaa;}
+        .opt-preview b{color:var(--gold);}
+        #who-name{font-family:'Bebas Neue';font-size:1.4rem;text-align:center;padding:9px;border-radius:9px;background:#000;border:2px solid var(--neon);color:var(--neon);letter-spacing:2px;margin-bottom:7px;}
+        @keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(0,242,255,.5);}50%{box-shadow:0 0 0 8px rgba(0,242,255,0);}}
+        #who-name.pulsing{animation:pulse-border .9s infinite;}
+        #sec-input,#comodin-sec,#pts-amount{background:#111;color:white;border:1px solid var(--border);padding:6px;border-radius:8px;font-size:.85rem;text-align:center;}
+        #sec-input{width:52px;} #comodin-sec{width:52px;} #pts-amount{width:100%;margin-bottom:5px;}
+        #live-timer{font-family:'Bebas Neue';font-size:1.5rem;color:var(--gold);min-width:36px;}
+        .pts-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;}
+        .pts-btn{padding:6px 3px;border-radius:7px;border:2px solid var(--border);background:#111;color:white;cursor:pointer;font-weight:700;font-size:.7rem;text-align:center;transition:.15s;}
+        .pts-btn:hover{border-color:var(--gold);}
+        #reset-confirm{display:none;background:#1a0000;border:1px solid var(--red);border-radius:9px;padding:9px;text-align:center;margin-top:7px;}
+        #reset-confirm p{font-size:.75rem;margin-bottom:7px;color:#ff9999;}
+        .tv-grid2{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+
+        /* EDITOR DE PREGUNTAS */
+        #editor-wrap{flex:1;min-width:0;padding:16px;overflow-y:auto;display:none;flex-direction:column;gap:12px;}
+        #editor-wrap::-webkit-scrollbar{width:4px;}
+        #editor-wrap::-webkit-scrollbar-thumb{background:var(--border);}
+        .eq-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;}
+        .eq-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+        .eq-cat{font-family:'Bebas Neue';font-size:1rem;color:var(--neon);}
+        .eq-pts{font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold);}
+        .eq-txt{font-size:.82rem;color:#ccc;margin-bottom:6px;}
+        .eq-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+        .eq-opt{font-size:.75rem;padding:4px 7px;background:#111;border-radius:6px;border:1px solid var(--border);}
+        .eq-opt.correct{border-color:var(--green);color:var(--green);}
+        .eq-actions{display:flex;gap:5px;margin-top:8px;}
+
+        /* MODAL EDITOR */
+        #modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;align-items:center;justify-content:center;}
+        #modal{background:#0e1219;border:1px solid var(--border);border-radius:16px;padding:20px;width:min(500px,95vw);max-height:90vh;overflow-y:auto;}
+        #modal h2{font-family:'Bebas Neue';color:var(--gold);font-size:1.4rem;margin-bottom:14px;}
+        .field{margin-bottom:10px;}
+        .field label{display:block;font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+        .field input,.field select{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.88rem;}
+        .field input:focus,.field select:focus{outline:none;border-color:var(--neon);}
+        .opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+        /* TIMER EXTRA */
+        #timer-state{font-size:.65rem;color:#888;text-align:center;margin-top:3px;}
+        .timer-paused #live-timer{color:var(--neon) !important;animation:blink .8s infinite;}
+        @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+        /* NOTAS */
+        #notes-area{width:100%;background:#0a0a0a;color:#ccc;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.78rem;resize:none;font-family:'Inter';}
+
+        /* HISTORIAL */
+        .hist-item{font-size:.7rem;padding:4px 6px;border-radius:6px;background:#111;border-left:3px solid var(--border);margin-bottom:3px;color:#aaa;}
+        .hist-item.correct{border-left-color:var(--green);}
+        .hist-item.wrong{border-left-color:var(--red);}
+
+        /* MODO OSCURO TOTAL */
+        .blackout-active #board-wrap{filter:brightness(0);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <h1>⚡ NEXUS CONTROL</h1>
+    <div class="scores">
+        <div class="score-pill" style="color:var(--purple);border-color:var(--purple);" id="s-0">K: 0</div>
+        <div class="score-pill" style="color:var(--pink);border-color:var(--pink);" id="s-1">M: 0</div>
+        <div class="score-pill" style="color:var(--blue);border-color:var(--blue);" id="s-2">J: 0</div>
+    </div>
+    <div id="conn-status"><span id="conn-dot"></span>CONECTANDO...</div>
+</div>
+
+<!-- TABS -->
+<div id="tabs">
+    <div class="tab active" onclick="switchTab('juego')">🎮 JUEGO</div>
+    <div class="tab" onclick="switchTab('editor')">✏️ PREGUNTAS</div>
+</div>
+
+<div id="body-wrap">
+    <!-- TABLERO -->
+    <div id="board-wrap">
+        <div id="board-grid"></div>
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div id="ctrl-panel">
+        <!-- TV -->
+        <div class="section">
+            <div class="section-title">📺 TV</div>
+            <div class="tv-grid2" style="margin-bottom:5px;">
+                <button class="btn btn-neon"  onclick="pub('tv',{type:'show_qrs'})">📱 QRs</button>
+                <button class="btn btn-dark"  onclick="pub('tv',{type:'hide_qrs'})">✖ QRs</button>
+                <button class="btn btn-gold"  id="btn-logo" onclick="toggleLogo()">🎬 Logo</button>
+                <button class="btn btn-dark"  onclick="syncTV()">🔄 Sync</button>
+            </div>
+            <div style="display:flex;gap:5px;margin-top:5px;">
+                <input id="tv-msg-input" placeholder="Mensaje en TV..." style="flex:1;background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:6px 9px;font-size:.76rem;">
+                <button class="btn btn-purple" style="flex:none;padding:6px 9px;" onclick="showMessage()">▶</button>
+            </div>
+        </div>
+
+        <!-- MONITOR -->
+        <div id="monitor" style="display:none;">
+            <div class="section">
+                <div class="section-title">🎯 Pregunta activa</div>
+                <div id="m-title"></div>
+                <div id="m-txt"></div>
+                <div id="m-opts">
+                    <div class="opt-preview"><b>A)</b> <span id="opt-a"></span></div>
+                    <div class="opt-preview"><b>B)</b> <span id="opt-b"></span></div>
+                    <div class="opt-preview"><b>C)</b> <span id="opt-c"></span></div>
+                    <div class="opt-preview"><b>D)</b> <span id="opt-d"></span></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Flujo</div>
+                <div class="btn-row">
+                    <button class="btn btn-neon" onclick="pub('tv',{type:'show_txt'})">1. Pregunta</button>
+                    <button class="btn btn-gold" onclick="pub('tv',{type:'show_ops'})">2. Opciones</button>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Temporizador</div>
+                <div class="btn-row" style="align-items:center;margin-bottom:5px;">
+                    <input type="number" id="sec-input" value="30">
+                    <div id="live-timer">--</div>
+                </div>
+                <div id="timer-state">detenido</div>
+                <div class="btn-row" style="margin-top:5px;">
+                    <button class="btn btn-red"   id="btn-timer-start"  onclick="lanzarTiempo()">▶ Start</button>
+                    <button class="btn btn-neon"  id="btn-timer-pause"  onclick="pauseTimer()" style="display:none;">⏸ Pausa</button>
+                    <button class="btn btn-gold"  id="btn-timer-resume" onclick="resumeTimer()" style="display:none;">▶ Seguir</button>
+                    <button class="btn btn-dark"  id="btn-timer-stop"   onclick="stopTimer()" style="display:none;">⏹ Stop</button>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Pulsadores</div>
+                <div class="btn-row">
+                    <button class="btn btn-green" onclick="pub('status','open')">🟢 Habilitar</button>
+                    <button class="btn btn-red" onclick="pub('status','close')">🔴 Bloquear</button>
+                </div>
+            </div>
+            <div id="voto-panel" class="section" style="display:none;">
+                <div class="section-title">⚡ Pulsó</div>
+                <div id="who-name">---</div>
+                <div class="btn-row" style="margin-bottom:5px;">
+                    <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:1})">A</button>
+                    <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:2})">B</button>
+                    <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:3})">C</button>
+                    <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:4})">D</button>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-green" style="padding:11px;font-size:.88rem;" onclick="resolve(true)">✅ CORRECTO</button>
+                    <button class="btn btn-red" style="padding:11px;font-size:.88rem;" onclick="resolve(false)">❌ ERROR</button>
+                </div>
+                <div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--border);">
+                    <div class="section-title" style="margin-bottom:4px;">Sin suspenso</div>
+                    <div class="btn-row">
+                        <button class="btn btn-green" style="opacity:.7;" onclick="resolve(true, true)">⚡✅ Directo</button>
+                        <button class="btn btn-red"   style="opacity:.7;" onclick="resolve(false,true)">⚡❌ Directo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMODINES -->
+        <div class="section">
+            <div class="section-title">🃏 Comodines</div>
+            <div style="display:flex;gap:5px;align-items:center;margin-bottom:7px;">
+                <span style="font-size:.7rem;color:#888;">Seg:</span>
+                <input type="number" id="comodin-sec" value="30">
+            </div>
+            <div class="pts-grid" style="margin-bottom:5px;">
+                <button class="btn" style="background:#003d1a;color:#00ff88;border:1px solid #00ff88;" onclick="lanzarComodin('llamada')">📞 Llamada</button>
+                <button class="btn" style="background:#1a1a00;color:#ffc300;border:1px solid #ffc300;" onclick="lanzarComodin('publico')">👥 Público</button>
+                <button class="btn" style="background:#1a001a;color:#cc44ff;border:1px solid #cc44ff;" onclick="lanzarComodin('5050')">✂️ 50/50</button>
+            </div>
+            <button class="btn btn-dark" style="width:100%;font-size:.7rem;" onclick="cerrarComodin()">✖ Cerrar comodín</button>
+        </div>
+
+        <!-- PUNTOS MANUALES -->
+        <div class="section">
+            <div class="section-title">✏️ Puntos manuales</div>
+            <input type="number" id="pts-amount" value="200" placeholder="pts">
+            <div class="pts-grid">
+                <button class="pts-btn" style="border-color:var(--purple);color:var(--purple);" onclick="addPts(0)">+ K</button>
+                <button class="pts-btn" style="border-color:var(--pink);color:var(--pink);" onclick="addPts(1)">+ M</button>
+                <button class="pts-btn" style="border-color:var(--blue);color:var(--blue);" onclick="addPts(2)">+ J</button>
+                <button class="pts-btn" style="border-color:var(--purple);color:var(--purple);opacity:.5;" onclick="addPts(0,true)">− K</button>
+                <button class="pts-btn" style="border-color:var(--pink);color:var(--pink);opacity:.5;" onclick="addPts(1,true)">− M</button>
+                <button class="pts-btn" style="border-color:var(--blue);color:var(--blue);opacity:.5;" onclick="addPts(2,true)">− J</button>
+            </div>
+        </div>
+
+        <!-- MÚSICA -->
+        <div class="section">
+            <div class="section-title">🎵 Música — Adivina la canción</div>
+            <div style="margin-bottom:6px;">
+                <input id="music-file" type="file" accept="audio/*" multiple style="width:100%;background:#111;color:#aaa;border:1px solid var(--border);border-radius:8px;padding:5px;font-size:.7rem;cursor:pointer;">
+            </div>
+            <div id="music-list" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;"></div>
+            <div id="music-controls" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+                <div style="font-size:.72rem;color:var(--neon);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="music-now-playing">—</div>
+                <div style="display:flex;gap:5px;align-items:center;margin-bottom:6px;">
+                    <span style="font-size:.7rem;color:#888;">Desde seg:</span>
+                    <input type="number" id="music-start" value="0" min="0" style="width:60px;background:#111;color:white;border:1px solid var(--border);border-radius:6px;padding:4px;font-size:.8rem;text-align:center;">
+                </div>
+                <div class="btn-row" style="margin-bottom:6px;">
+                    <button class="btn btn-green" onclick="musicPlay()">▶ Play</button>
+                    <button class="btn btn-dark"  onclick="musicPause()">⏸</button>
+                    <button class="btn btn-red"   onclick="musicStop()">⏹</button>
+                </div>
+                <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.8"
+                    style="width:100%;accent-color:var(--gold);"
+                    oninput="pub('tv',{type:'music_volume',vol:parseFloat(this.value)})">
+                <div style="font-size:.65rem;color:#555;text-align:center;margin-top:3px;">Volumen</div>
+            </div>
+        </div>
+
+        <!-- EFECTOS TV -->
+        <div class="section">
+            <div class="section-title">🎬 Efectos TV</div>
+            <div class="tv-grid2" style="margin-bottom:5px;">
+                <button class="btn btn-dark" onclick="tvEffect('spotlight')">🔦 Spotlight</button>
+                <button class="btn btn-dark" onclick="tvEffect('confetti')">🎊 Confetti</button>
+                <button class="btn btn-dark" onclick="tvEffect('blackout')">⬛ Blackout</button>
+                <button class="btn btn-dark" onclick="tvEffect('shake')">📳 Shake</button>
+            </div>
+        </div>
+
+        <!-- ESCENAS ESPECIALES -->
+        <div class="section">
+            <div class="section-title">🎭 Escenas especiales</div>
+            <div class="tv-grid2" style="margin-bottom:5px;">
+                <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="pubScene('ganador')">🏆 Ganador</button>
+                <button class="btn" style="background:#001a30;color:var(--neon);border:1px solid var(--neon);" onclick="pubScene('intro')">🎬 Intro</button>
+                <button class="btn" style="background:#1a1a00;color:var(--gold);border:1px solid var(--gold);" onclick="pubScene('doble')">⚡ Doble pts</button>
+                <button class="btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red);" onclick="pubScene('final')">🔥 Final</button>
+            </div>
+        </div>
+
+        <!-- MÚSICA DE AMBIENTE -->
+        <div class="section">
+            <div class="section-title">🎵 Ambiente</div>
+            <div class="tv-grid2">
+                <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'tension'})">😰 Tensión</button>
+                <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'celebration'})">🎉 Celebración</button>
+                <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'thinking'})">🤔 Pensando</button>
+                <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'stop'})">⏹ Parar</button>
+            </div>
+        </div>
+
+        <!-- NOTAS -->
+        <div class="section">
+            <div class="section-title">📝 Notas del presentador</div>
+            <textarea id="notes-area" rows="4" placeholder="Apuntes, orden del show, recordatorios..."></textarea>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div class="section">
+            <div class="section-title">📋 Historial de ronda</div>
+            <div id="hist-list" style="max-height:120px;overflow-y:auto;"></div>
+            <button class="btn btn-dark" style="width:100%;margin-top:5px;font-size:.65rem;" onclick="document.getElementById('hist-list').innerHTML=''">Limpiar</button>
+        </div>
+
+        <!-- RESET -->
+        <div class="section">
+            <div class="section-title">⚠️ Peligro</div>
+            <div class="btn-row" style="margin-bottom:5px;">
+                <button class="btn btn-dark" onclick="toggleBlackout()">🌑 Blackout TV</button>
+                <button class="btn btn-dark" onclick="pub('tv',{type:'message',text:'¡VOLVEMOS EN UN MOMENTO!'})">⏸ Pausa show</button>
+            </div>
+            <button class="btn btn-dark" style="width:100%;" onclick="document.getElementById('reset-confirm').style.display='block'">🗑 Resetear Partida</button>
+            <div id="reset-confirm">
+                <p>¿Borrar puntos y preguntas usadas?</p>
+                <div class="btn-row">
+                    <button class="btn btn-red" onclick="resetGame()">SÍ</button>
+                    <button class="btn btn-dark" onclick="document.getElementById('reset-confirm').style.display='none'">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- EDITOR TAB -->
+<div id="editor-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+        <span style="font-family:'Bebas Neue';font-size:1.3rem;color:var(--gold);">BANCO DE PREGUNTAS</span>
+        <div style="display:flex;gap:8px;">
+            <button class="btn btn-neon" onclick="openModal()">+ Nueva pregunta</button>
+            <button class="btn btn-gold" onclick="syncTV()">🔄 Sync TV</button>
+        </div>
+    </div>
+    <div id="eq-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-bg">
+    <div id="modal">
+        <h2 id="modal-title">NUEVA PREGUNTA</h2>
+        <input type="hidden" id="edit-id">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="field">
+                <label>Categoría</label>
+                <select id="f-cat-select" onchange="onCatSelect(this.value)" style="width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.88rem;margin-bottom:5px;">
+                </select>
+                <input id="f-cat" placeholder="O escribe una nueva categoría..." style="display:none;">
+            </div>
+            <div class="field">
+                <label>Puntos</label>
+                <select id="f-pts">
+                    <option>200</option><option>400</option><option>600</option><option>800</option><option>1000</option>
+                </select>
+            </div>
+        </div>
+        <div class="field">
+            <label>Pregunta</label>
+            <input id="f-txt" placeholder="¿Cuál es...?">
+        </div>
+        <div class="field">
+            <label>Opciones (marca la correcta ✓)</label>
+            <div class="opts-grid">
+                <div class="field" style="margin:0;">
+                    <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="correct" value="A" checked> <span style="color:var(--gold);">A)</span></label>
+                    <input id="f-o1" placeholder="Opción A">
+                </div>
+                <div class="field" style="margin:0;">
+                    <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="correct" value="B"> <span style="color:var(--gold);">B)</span></label>
+                    <input id="f-o2" placeholder="Opción B">
+                </div>
+                <div class="field" style="margin:0;">
+                    <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="correct" value="C"> <span style="color:var(--gold);">C)</span></label>
+                    <input id="f-o3" placeholder="Opción C">
+                </div>
+                <div class="field" style="margin:0;">
+                    <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="correct" value="D"> <span style="color:var(--gold);">D)</span></label>
+                    <input id="f-o4" placeholder="Opción D">
+                </div>
+            </div>
+        </div>
+        <div class="btn-row" style="margin-top:14px;">
+            <button class="btn btn-green" onclick="saveQuestion()">💾 Guardar</button>
+            <button class="btn btn-dark" onclick="closeModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const ably = new Ably.Realtime('hfiiHQ.aSZm9g:kMhwAKjhl_4t-ALEqCv_M_55VJlSYMKunV-PLoJJeVM');
+const channel = ably.channels.get('juego-pasta');
+const chData  = ably.channels.get('juego-data'); // canal para guardar preguntas
+
+let scores = [0,0,0];
+let cats = [], curQ = null, lastP = null, allQuestions = {};
+let usedQs = [];
+let timerInterval = null, timerSec = 0;
+let questions = []; // array de preguntas guardadas
+
+// Cargar puntos
+const savedScores = localStorage.getItem('juego_puntos');
+if(savedScores) scores = JSON.parse(savedScores);
+
+ably.connection.on('connected', () => {
+    document.getElementById('conn-dot').classList.add('on');
+    document.getElementById('conn-status').innerHTML = '<span id="conn-dot" class="on"></span>CONECTADO';
+});
+
+function pub(ch, d) { channel.publish(ch, d); }
+
+// ── TABS ──
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='juego')||(i===1&&tab==='editor')));
+    document.getElementById('body-wrap').style.display  = tab==='juego'  ? 'flex' : 'none';
+    document.getElementById('editor-wrap').style.display = tab==='editor' ? 'flex' : 'none';
+    if(tab==='editor') renderEditor();
+}
+
+// ── SCORES ──
+function updateAdminScores() {
+    ['K','M','J'].forEach((l,i) => {
+        const el = document.getElementById('s-'+i);
+        if(el) el.innerText = l+': '+scores[i];
+    });
+    pub('tv', {type:'scores', vals: scores});
+}
+
+// ── PREGUNTAS: GUARDAR EN ABLY (history) ──
+// Usamos localStorage como almacén principal (persiste entre reinicios del sistema)
+// y Ably para sincronizar entre dispositivos en tiempo real
+
+function loadQuestions() {
+    const saved = localStorage.getItem('nexus_questions');
+    if(saved) {
+        questions = JSON.parse(saved);
+        rebuildFromQuestions();
+        buildBoard();
+        syncTV();
+    } else {
+        // localStorage vacío (nuevo origen) — pedir historial a Ably
+        chData.history({limit:1}, (err, page) => {
+            if(!err && page.items.length > 0) {
+                questions = page.items[0].data;
+                localStorage.setItem('nexus_questions', JSON.stringify(questions));
+                rebuildFromQuestions();
+                buildBoard();
+                syncTV();
+            }
+        });
+    }
+}
+
+function saveQuestions() {
+    localStorage.setItem('nexus_questions', JSON.stringify(questions));
+    // Publicar a todos los dispositivos
+    chData.publish('questions', questions);
+}
+
+// Escuchar cambios de preguntas desde otros dispositivos
+chData.subscribe('questions', (msg) => {
+    questions = msg.data;
+    localStorage.setItem('nexus_questions', JSON.stringify(questions));
+    rebuildFromQuestions();
+    buildBoard();
+    syncTV();
+});
+
+function rebuildFromQuestions() {
+    cats = [...new Set(questions.map(q => q.cat))];
+    allQuestions = {};
+    questions.forEach(q => {
+        if(!allQuestions[q.cat]) allQuestions[q.cat] = {};
+        allQuestions[q.cat][String(q.pts)] = q;
+    });
+}
+
+// ── TABLERO ──
+function buildBoard() {
+    usedQs = localStorage.getItem('preguntas_usadas') ? JSON.parse(localStorage.getItem('preguntas_usadas')) : [];
+    const grid = document.getElementById('board-grid');
+    grid.innerHTML = '';
+    if(!cats.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;color:#555;font-size:.85rem;padding:30px;text-align:center;">Ve a <b style="color:var(--neon)">✏️ PREGUNTAS</b> para añadir preguntas</div>';
+        return;
+    }
+    grid.style.gridTemplateColumns = `repeat(${cats.length}, 1fr)`;
+    cats.forEach((cat, ci) => {
+        const col = document.createElement('div');
+        col.className = 'b-col';
+        col.innerHTML = `<div class="b-header">${cat}</div>`;
+        [200,400,600,800,1000].forEach(pts => {
+            const qId = `q-${ci}-${pts}`;
+            const ptsStr = String(pts);
+            const hasQ = allQuestions[cat] && allQuestions[cat][ptsStr];
+            const cell = document.createElement('div');
+            cell.className = 'b-cell' + (usedQs.includes(qId)?' used':'') + (!hasQ?' no-q':'');
+            cell.id = 'admin-'+qId;
+            cell.innerText = pts;
+            if(hasQ) cell.onclick = () => selectQuestion(cat, ptsStr, ci, qId, cell);
+            col.appendChild(cell);
+        });
+        grid.appendChild(col);
+    });
+}
+
+function selectQuestion(cat, pts, catIdx, qId, cellEl) {
+    const q = allQuestions[cat] && allQuestions[cat][pts];
+    if(!q) return;
+    curQ = {...q};
+    document.querySelectorAll('.b-cell.active-q').forEach(c => c.classList.remove('active-q'));
+    cellEl.classList.add('active-q');
+    document.getElementById('monitor').style.display = 'block';
+    document.getElementById('m-title').innerText = cat+' — '+pts+' PTS';
+    document.getElementById('m-txt').innerText = q.txt;
+    const opts = [q.o1,q.o2,q.o3,q.o4];
+    ['a','b','c','d'].forEach((l,i) => {
+        const el = document.getElementById('opt-'+l);
+        el.innerText = opts[i]||'';
+        const card = el.parentElement;
+        const isCorrect = q.correct === ['A','B','C','D'][i];
+        card.style.borderColor = isCorrect ? 'var(--green)' : 'var(--border)';
+        card.style.background  = isCorrect ? 'rgba(0,255,136,.1)' : '';
+    });
+    document.getElementById('voto-panel').style.display = 'none';
+    pub('tv', {type:'open_q', cat, pts, catIdx, txt:q.txt, o1:q.o1, o2:q.o2, o3:q.o3, o4:q.o4});
+    pub('status','close');
+    stopTimer();
+}
+
+function syncTV() {
+    if(!cats.length) return;
+    usedQs = localStorage.getItem('preguntas_usadas') ? JSON.parse(localStorage.getItem('preguntas_usadas')) : [];
+    pub('tv', {type:'init', cats, usedQ: usedQs});
+}
+
+// ── TIMER ──
+let timerPaused = false;
+let timerRemaining = 0;
+
+function setTimerUI(state) {
+    // state: 'idle' | 'running' | 'paused'
+    document.getElementById('btn-timer-start').style.display  = state==='idle'    ? '' : 'none';
+    document.getElementById('btn-timer-pause').style.display  = state==='running' ? '' : 'none';
+    document.getElementById('btn-timer-resume').style.display = state==='paused'  ? '' : 'none';
+    document.getElementById('btn-timer-stop').style.display   = state!=='idle'    ? '' : 'none';
+    document.getElementById('timer-state').innerText = {idle:'detenido',running:'en curso',paused:'⏸ pausado'}[state];
+    document.getElementById('live-timer').parentElement?.classList.toggle('timer-paused', state==='paused');
+}
+
+function lanzarTiempo() {
+    stopTimer(true);
+    timerSec = parseInt(document.getElementById('sec-input').value);
+    timerRemaining = timerSec;
+    document.getElementById('live-timer').innerText = timerSec;
+    pub('tv', {type:'comodin', sec:timerSec});
+    setTimerUI('running');
+    timerInterval = setInterval(() => {
+        timerRemaining--;
+        document.getElementById('live-timer').innerText = timerRemaining > 0 ? timerRemaining : '⏰';
+        if(timerRemaining <= 0) { stopTimer(); }
+    }, 1000);
+}
+
+function pauseTimer() {
+    if(timerInterval) { clearInterval(timerInterval); timerInterval=null; }
+    pub('tv', {type:'pause_timer'});
+    setTimerUI('paused');
+}
+
+function resumeTimer() {
+    pub('tv', {type:'resume_timer', sec: timerRemaining, total: timerSec});
+    setTimerUI('running');
+    timerInterval = setInterval(() => {
+        timerRemaining--;
+        document.getElementById('live-timer').innerText = timerRemaining > 0 ? timerRemaining : '⏰';
+        if(timerRemaining <= 0) { stopTimer(); }
+    }, 1000);
+}
+
+function stopTimer(silent=false) {
+    if(timerInterval) { clearInterval(timerInterval); timerInterval=null; }
+    document.getElementById('live-timer').innerText = '--';
+    timerRemaining = 0;
+    setTimerUI('idle');
+    if(!silent) pub('tv', {type:'stop_timer'});
+}
+
+// ── PULSADORES ──
+channel.subscribe('pulso-web', (m) => {
+    if(lastP!==null) return;
+    lastP = m.data;
+    const who = document.getElementById('who-name');
+    who.innerText = '⚡ '+lastP.name.toUpperCase();
+    who.classList.add('pulsing');
+    document.getElementById('voto-panel').style.display = 'block';
+    pub('tv', {type:'show_name', name:m.data.name, id:m.data.id});
+    pub('status','close');
+});
+
+function resolve(ok, direct=false) {
+    if(!lastP) return alert('Nadie pulsó');
+    const pts = parseInt(curQ.pts);
+    scores[lastP.id] += ok ? pts : -pts;
+    localStorage.setItem('juego_puntos', JSON.stringify(scores));
+    pub('tv', {type: direct ? 'feedback_direct' : 'feedback', correct:ok});
+    if(ok && direct) pub('tv', {type:'effect', effect:'confetti'});
+    updateAdminScores();
+    addHist(`${curQ.cat} ${curQ.pts}pts — ${lastP.name}`, ok);
+    const qId = `q-${cats.indexOf(curQ.cat)}-${curQ.pts}`;
+    if(!usedQs.includes(qId)) { usedQs.push(qId); localStorage.setItem('preguntas_usadas', JSON.stringify(usedQs)); }
+    const cell = document.getElementById('admin-'+qId);
+    if(cell) { cell.classList.remove('active-q'); cell.classList.add('used'); }
+    setTimeout(() => {
+        document.getElementById('monitor').style.display = 'none';
+        document.getElementById('who-name').classList.remove('pulsing');
+        lastP = null; stopTimer();
+    }, 1000);
+}
+
+// ── LOGO ──
+let logoOn = false;
+function toggleLogo() {
+    logoOn = !logoOn;
+    pub('tv', {type: logoOn ? 'show_logo' : 'hide_logo'});
+    const btn = document.getElementById('btn-logo');
+    btn.style.background = logoOn ? 'var(--gold)' : '';
+    btn.style.color = logoOn ? '#000' : '';
+    btn.innerText = logoOn ? '🎬 Ocultar Logo' : '🎬 Logo';
+}
+
+// ── MÚSICA ──
+let musicFiles = {};
+let musicCurrentKey = null;
+const adminAudio = new Audio();
+
+async function loadCanciones() {
+    try {
+        const r = await fetch('canciones.json');
+        const list = await r.json();
+        list.forEach(c => { musicFiles[c.nombre] = c; });
+        renderMusicList();
+    } catch(e) {
+        console.log('canciones.json no encontrado');
+    }
+}
+loadCanciones();
+
+// También permitir cargar archivos locales adicionales
+document.getElementById('music-file').addEventListener('change', function() {
+    Array.from(this.files).forEach(file => {
+        musicFiles[file.name] = { nombre: file.name, archivo: URL.createObjectURL(file), _local: true };
+    });
+    renderMusicList();
+});
+
+function renderMusicList() {
+    const list = document.getElementById('music-list');
+    list.innerHTML = '';
+    Object.values(musicFiles).forEach(c => {
+        const isSelected = c.nombre === musicCurrentKey;
+        const row = document.createElement('div');
+        row.style.cssText = `display:flex;align-items:center;gap:4px;background:#111;border:1px solid ${isSelected?'var(--green)':'var(--border)'};border-radius:7px;padding:5px 7px;cursor:pointer;`;
+        row.innerHTML = `<span style="flex:1;font-size:.7rem;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🎵 ${c.nombre}</span>
+            <button style="background:var(--neon);color:#000;border:none;border-radius:5px;padding:3px 7px;font-size:.65rem;font-weight:700;cursor:pointer;" onclick="musicSelect('${c.nombre}')">▶</button>`;
+        list.appendChild(row);
+    });
+}
+
+function musicSelect(name) {
+    musicCurrentKey = name;
+    const c = musicFiles[name];
+    adminAudio.src = c.archivo;
+    adminAudio.load();
+    document.getElementById('music-now-playing').innerText = name;
+    document.getElementById('music-controls').style.display = 'block';
+    renderMusicList();
+}
+
+function musicPlay() {
+    if(!musicCurrentKey) return;
+    const c = musicFiles[musicCurrentKey];
+    const start = parseFloat(document.getElementById('music-start').value) || 0;
+    const vol   = parseFloat(document.getElementById('music-vol').value);
+    // Preview en admin
+    adminAudio.currentTime = start;
+    adminAudio.volume = vol;
+    adminAudio.play().catch(()=>{});
+    // Enviar a TV — usa la ruta del archivo (en caché)
+    pub('tv', {type:'music_play', file: c.archivo, start, vol});
+}
+function musicPause() {
+    adminAudio.pause();
+    pub('tv', {type:'music_pause'});
+}
+function musicStop() {
+    adminAudio.pause(); adminAudio.currentTime = 0;
+    pub('tv', {type:'music_stop'});
+}
+function musicRemove(name) {
+    delete musicFiles[name];
+    if(musicCurrentKey === name) {
+        musicStop();
+        document.getElementById('music-controls').style.display = 'none';
+        musicCurrentKey = null;
+    }
+    renderMusicList();
+}
+
+// ── ESCENAS ESPECIALES ──
+function pubScene(scene) { pub('tv', {type:'scene', scene}); }
+
+// ── EFECTOS TV ──
+function tvEffect(type) { pub('tv', {type:'effect', effect:type}); }
+let blackoutOn = false;
+function toggleBlackout() {
+    blackoutOn = !blackoutOn;
+    pub('tv', {type: blackoutOn ? 'blackout_on' : 'blackout_off'});
+}
+
+// ── HISTORIAL ──
+function addHist(text, ok) {
+    const list = document.getElementById('hist-list');
+    const d = document.createElement('div');
+    d.className = 'hist-item ' + (ok ? 'correct' : 'wrong');
+    d.innerText = (ok ? '✅' : '❌') + ' ' + text;
+    list.prepend(d);
+}
+
+// ── NOTAS ──
+const notesArea = document.getElementById('notes-area');
+if(notesArea) {
+    notesArea.value = localStorage.getItem('nexus_notes') || '';
+    notesArea.addEventListener('input', () => localStorage.setItem('nexus_notes', notesArea.value));
+}
+
+// ── COMODINES ──
+function lanzarComodin(tipo) {
+    const sec = parseInt(document.getElementById('comodin-sec').value)||30;
+    const correct = curQ ? curQ.correct : 'A';
+    pub('tv', {type:'comodin_'+tipo, sec, correct});
+}
+function cerrarComodin() { pub('tv', {type:'close_comodin'}); }
+
+// ── PUNTOS MANUALES ──
+function addPts(idx, subtract=false) {
+    const amt = parseInt(document.getElementById('pts-amount').value)||0;
+    scores[idx] += subtract ? -amt : amt;
+    localStorage.setItem('juego_puntos', JSON.stringify(scores));
+    updateAdminScores();
+}
+
+// ── MENSAJE TV ──
+function showMessage() {
+    const msg = document.getElementById('tv-msg-input').value.trim();
+    if(!msg) return;
+    pub('tv', {type:'message', text:msg});
+}
+
+// ── RESET ──
+function resetGame() {
+    scores = [0,0,0];
+    localStorage.removeItem('juego_puntos');
+    localStorage.removeItem('preguntas_usadas');
+    updateAdminScores();
+    document.getElementById('reset-confirm').style.display = 'none';
+    document.getElementById('monitor').style.display = 'none';
+    lastP = null; curQ = null; usedQs = [];
+    buildBoard(); syncTV();
+}
+
+// ── EDITOR DE PREGUNTAS ──
+function renderEditor() {
+    const list = document.getElementById('eq-list');
+    list.innerHTML = '';
+    if(!questions.length) {
+        list.innerHTML = '<div style="color:#555;text-align:center;padding:30px;">No hay preguntas. Pulsa "+ Nueva pregunta"</div>';
+        return;
+    }
+    // Agrupar por categoría
+    const byCat = {};
+    questions.forEach(q => { if(!byCat[q.cat]) byCat[q.cat]=[]; byCat[q.cat].push(q); });
+    Object.entries(byCat).forEach(([cat, qs]) => {
+        const section = document.createElement('div');
+        section.innerHTML = `<div style="font-family:'Bebas Neue';font-size:1.1rem;color:var(--neon);margin-bottom:6px;padding:4px 0;border-bottom:1px solid var(--border);">${cat}</div>`;
+        qs.sort((a,b)=>a.pts-b.pts).forEach(q => {
+            const card = document.createElement('div');
+            card.className = 'eq-card';
+            const optLabels = ['A','B','C','D'];
+            const optsHtml = [q.o1,q.o2,q.o3,q.o4].map((o,i)=>
+                `<div class="eq-opt ${q.correct===optLabels[i]?'correct':''}"><b style="color:var(--gold)">${optLabels[i]})</b> ${o||''} ${q.correct===optLabels[i]?'✓':''}</div>`
+            ).join('');
+            card.innerHTML = `
+                <div class="eq-card-header">
+                    <span class="eq-pts">${q.pts} PTS</span>
+                    <div style="display:flex;gap:5px;">
+                        <button class="btn btn-dark" style="padding:4px 10px;font-size:.7rem;" onclick="editQuestion('${q.id}')">✏️ Editar</button>
+                        <button class="btn btn-red"  style="padding:4px 10px;font-size:.7rem;" onclick="deleteQuestion('${q.id}')">🗑</button>
+                    </div>
+                </div>
+                <div class="eq-txt">${q.txt}</div>
+                <div class="eq-opts">${optsHtml}</div>`;
+            section.appendChild(card);
+        });
+        list.appendChild(section);
+    });
+}
+
+function populateCatSelect(selectedCat='') {
+    const sel = document.getElementById('f-cat-select');
+    const input = document.getElementById('f-cat');
+    sel.innerHTML = '';
+
+    // Si no hay categorías aún, ir directo al input
+    if(!cats.length) {
+        sel.style.display = 'none';
+        input.style.display = 'block';
+        input.value = selectedCat || '';
+        input.placeholder = 'Escribe el nombre de la categoría...';
+        return;
+    }
+
+    cats.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c; o.innerText = c;
+        if(c === selectedCat) o.selected = true;
+        sel.appendChild(o);
+    });
+    const newOpt = document.createElement('option');
+    newOpt.value = '__new__'; newOpt.innerText = '+ Nueva categoría...';
+    sel.appendChild(newOpt);
+
+    if(selectedCat && !cats.includes(selectedCat)) {
+        sel.style.display = 'none';
+        input.style.display = 'block';
+        input.value = selectedCat;
+    } else {
+        sel.style.display = 'block';
+        input.style.display = 'none';
+        input.value = '';
+    }
+}
+
+function onCatSelect(val) {
+    const input = document.getElementById('f-cat');
+    const sel = document.getElementById('f-cat-select');
+    if(val === '__new__') {
+        sel.style.display = 'none';
+        input.style.display = 'block';
+        input.value = '';
+        input.focus();
+    }
+}
+
+function openModal(id=null) {
+    document.getElementById('modal-bg').style.display = 'flex';
+    document.getElementById('modal-title').innerText = id ? 'EDITAR PREGUNTA' : 'NUEVA PREGUNTA';
+    document.getElementById('edit-id').value = id||'';
+    if(id) {
+        const q = questions.find(x=>x.id===id);
+        if(!q) return;
+        populateCatSelect(q.cat);
+        document.getElementById('f-pts').value = q.pts;
+        document.getElementById('f-txt').value = q.txt;
+        document.getElementById('f-o1').value = q.o1||'';
+        document.getElementById('f-o2').value = q.o2||'';
+        document.getElementById('f-o3').value = q.o3||'';
+        document.getElementById('f-o4').value = q.o4||'';
+        document.querySelector(`input[name="correct"][value="${q.correct}"]`).checked = true;
+    } else {
+        populateCatSelect();
+        ['f-txt','f-o1','f-o2','f-o3','f-o4'].forEach(id=>document.getElementById(id).value='');
+        document.getElementById('f-pts').value = '200';
+        document.querySelector('input[name="correct"][value="A"]').checked = true;
+    }
+}
+function closeModal() { document.getElementById('modal-bg').style.display='none'; }
+
+function saveQuestion() {
+    const sel = document.getElementById('f-cat-select');
+    const input = document.getElementById('f-cat');
+    let cat = (sel.style.display === 'none' ? input.value : sel.value).trim().toUpperCase();
+    if(cat === '__NEW__') cat = '';
+    const pts = document.getElementById('f-pts').value;
+    const txt = document.getElementById('f-txt').value.trim();
+    const o1  = document.getElementById('f-o1').value.trim();
+    const o2  = document.getElementById('f-o2').value.trim();
+    const o3  = document.getElementById('f-o3').value.trim();
+    const o4  = document.getElementById('f-o4').value.trim();
+    const correct = document.querySelector('input[name="correct"]:checked').value;
+    if(!cat||!txt||!o1||!o2) return alert('Rellena al menos categoría, pregunta y opciones A y B');
+    const editId = document.getElementById('edit-id').value;
+    if(editId) {
+        const idx = questions.findIndex(x=>x.id===editId);
+        if(idx>=0) questions[idx] = {...questions[idx], cat,pts,txt,o1,o2,o3,o4,correct};
+    } else {
+        questions.push({id: Date.now().toString(), cat,pts,txt,o1,o2,o3,o4,correct});
+    }
+    saveQuestions();
+    rebuildFromQuestions();
+    buildBoard();
+    syncTV();
+    closeModal();
+    renderEditor();
+}
+
+function editQuestion(id) { openModal(id); }
+
+function deleteQuestion(id) {
+    if(!confirm('¿Eliminar esta pregunta?')) return;
+    questions = questions.filter(q=>q.id!==id);
+    saveQuestions();
+    rebuildFromQuestions();
+    buildBoard();
+    syncTV();
+    renderEditor();
+}
+
+// Escuchar cuando la TV pide sincronización al cargar
+channel.subscribe('request_sync', () => {
+    syncTV();
+    pub('tv', {type:'scores', vals: scores});
+});
+
+// ── INIT ──
+window.onload = () => {
+    loadQuestions();
+    buildBoard();
+    updateAdminScores();
+    syncTV();
+    // Notas
+    const n = document.getElementById('notes-area');
+    if(n) { n.value = localStorage.getItem('nexus_notes')||''; n.addEventListener('input',()=>localStorage.setItem('nexus_notes',n.value)); }
+    setTimerUI('idle');
+};
+</script>
+</body>
+</html>
