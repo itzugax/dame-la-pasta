@@ -1,4 +1,13 @@
 [
-  { "nombre": "Canción 1", "archivo": "musica/lanavedelolvido.mp3" },
-  { "nombre": "Canción 2", "archivo": "musica/mibuenamor.mp3" }
+  { "nombre": "La nave del olvido", "archivo": "musica/lanavedelolvido.mp3" },
+  { "nombre": "Mi buen amor", "archivo": "musica/mibuenamor.mp3" },
+  { "nombre": "Bad (Cultura Musical 200)", "archivo": "musica/bad.mp3" },
+  { "nombre": "Mon (Cultura Musical 400)", "archivo": "musica/mon.mp3" },
+  { "nombre": "Shark (Cultura Musical 800)", "archivo": "musica/shark.mp3" },
+  { "nombre": "Amar (Cultura Musical 1000)", "archivo": "musica/amar.mp3" },
+  { "nombre": "Nadie nos pilla (Pena 200)", "archivo": "musica/pena/nadienospilla.mp3" },
+  { "nombre": "Tá lloviendo (Pena 400)", "archivo": "musica/pena/talloviendo.mp3" },
+  { "nombre": "Estoy aquí bebé (Pena 600)", "archivo": "musica/pena/estoyaquibebe.mp3" },
+  { "nombre": "Son amores (Pena 800)", "archivo": "musica/pena/sonamores.mp3" },
+  { "nombre": "Mini mini (Pena 1000)", "archivo": "musica/pena/minimini.mp3" }
 ]

@@ -180,6 +180,7 @@
     <div style="display:flex;align-items:center;gap:8px;">
         <div id="double-indicator">✖2 DOBLE</div>
         <div id="round-badge">R1</div>
+        <button onclick="toggleFS()" style="background:none;border:1px solid #333;color:#888;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:1rem;" title="Pantalla completa">⛶</button>
         <div id="conn-status"><span id="conn-dot"></span>CONECTANDO...</div>
     </div>
 </div>
@@ -229,7 +230,6 @@
             </div>
             <div class="btn-row" style="margin-top:5px;">
                 <button class="btn btn-dark" onclick="lanzarCuentaAtras()" style="font-size:.8rem;">3️⃣ Cuenta atrás</button>
-                <button class="btn" id="btn-rehearsal" style="background:#331100;color:#ff6600;border:1px solid #ff6600;font-size:.8rem;" onclick="toggleRehearsal()">🎭 Ensayo</button>
             </div>
         </div>
 
@@ -243,6 +243,16 @@
                     <div class="opt-preview"><b>B)</b> <span id="opt-b"></span></div>
                     <div class="opt-preview"><b>C)</b> <span id="opt-c"></span></div>
                     <div class="opt-preview"><b>D)</b> <span id="opt-d"></span></div>
+                </div>
+                <!-- Canción asignada a esta pregunta -->
+                <div id="q-music-panel" style="display:none;margin-top:8px;padding:8px;background:#0a1a0a;border:1px solid #00ff88;border-radius:8px;">
+                    <div style="font-size:.65rem;color:#00ff88;letter-spacing:1px;margin-bottom:5px;">🎵 CANCIÓN DE ESTA PREGUNTA</div>
+                    <div id="q-music-name" style="font-size:.8rem;color:#ccc;margin-bottom:6px;"></div>
+                    <div class="btn-row">
+                        <button class="btn btn-green" style="font-size:.8rem;" onclick="playQuestionMusic()">▶ Play</button>
+                        <button class="btn btn-dark"  style="font-size:.8rem;" onclick="musicPause()">⏸</button>
+                        <button class="btn btn-red"   style="font-size:.8rem;" onclick="musicStop()">⏹</button>
+                    </div>
                 </div>
             </div>
             <div class="section">
@@ -317,24 +327,66 @@
                     <button class="btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red);" onclick="pubScene('final')">🔥 Final</button>
                 </div>
                 <div class="tv-grid2">
-                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'tension'})">😰 Tensión</button>
-                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'celebration'})">🎉 Celebración</button>
-                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'thinking'})">🤔 Pensando</button>
-                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'stop'})">⏹ Parar</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'stop'})">⏹ Parar música amb.</button>
                 </div>
                 <div class="btn-row" style="margin-top:6px;">
                     <button class="btn btn-dark" onclick="toggleBlackout()">🌑 Blackout TV</button>
                     <button class="btn btn-dark" onclick="pub('tv',{type:'message',text:'¡VOLVEMOS EN UN MOMENTO!'})">⏸ Pausa show</button>
                 </div>
                 <div class="btn-row" style="margin-top:6px;">
-                    <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="mostrarPodio()">🏆 Podio final</button>
-                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_podio'})">✖ Cerrar podio</button>
-                </div>
-                <div class="btn-row" style="margin-top:6px;">
+                    <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="mostrarPodio()">🏆 Podio</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_podio'})">✖ Podio</button>
                     <button class="btn" style="background:#1a0000;color:#ff3131;border:1px solid #ff3131;" onclick="lanzarDesempate()">⚡ Desempate</button>
-                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_tiebreak'})">✖ Cerrar</button>
                 </div>
-            </div>
+                <!-- NUEVAS ESCENAS -->
+                <div class="section-title" style="margin-top:8px;">🎭 Escenas especiales</div>
+                <div class="tv-grid2" style="margin-bottom:5px;">
+                    <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="mostrarGanador()">🏆 Ganador</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_winner'})">✖ Ganador</button>
+                    <button class="btn" style="background:#1a001a;color:#cc44ff;border:1px solid #cc44ff;" onclick="lanzarRondaMusical()">🎵 Ronda musical</button>
+                    <button class="btn" style="background:#1a1a00;color:var(--gold);border:1px solid var(--gold);" onclick="momentoEstelar()">⭐ Momento estelar</button>
+                </div>
+                <div class="section-title" style="margin-top:6px;">🎬 Intro jugadores</div>
+                <div class="pts-grid" style="margin-bottom:5px;">
+                    <button class="pts-btn" style="border-color:var(--purple);color:var(--purple);" onclick="introJugador(0)">K</button>
+                    <button class="pts-btn" style="border-color:var(--pink);color:var(--pink);" onclick="introJugador(1)">M</button>
+                    <button class="pts-btn" style="border-color:var(--blue);color:var(--blue);" onclick="introJugador(2)">J</button>
+                </div>
+                <button class="btn btn-dark" style="width:100%;font-size:.7rem;margin-bottom:4px;" onclick="pub('tv',{type:'hide_intro_player'})">✖ Cerrar intro</button>
+                <div class="section-title" style="margin-top:6px;">🎬 Ceremonia de entrega</div>
+                <div class="btn-row" style="margin-bottom:4px;">
+                    <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="lanzarCeremonia()">▶ Iniciar</button>
+                    <button id="btn-ceremony-next" class="btn btn-gold" onclick="ceremoniaSiguiente()" style="display:none;">➡ Siguiente</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_ceremony'})">✖</button>
+                </div>
+                <div class="btn-row" style="margin-bottom:4px;">
+                    <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="lanzarDiscurso()">🎤 Discurso ganador</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_speech'})">✖</button>
+                </div>
+                <div class="section-title" style="margin-top:6px;">🎮 Mecánicas</div>
+                <div class="tv-grid2" style="margin-bottom:5px;">
+                    <button class="btn" style="background:#1a0800;color:#ff6600;border:1px solid #ff6600;" onclick="marcarFuego()">🔥 Fuego ×2</button>
+                    <button class="btn" style="background:#1a0000;color:#ff0000;border:1px solid #ff0000;" onclick="marcarBomba()">💣 Bomba</button>
+                    <button class="btn" style="background:#001a1a;color:var(--neon);border:1px solid var(--neon);" onclick="lanzarRuleta()">🎰 Ruleta</button>
+                    <button class="btn btn-dark" onclick="cambiarPregunta()">🔄 Cambiar preg.</button>
+                    <button class="btn btn-dark" onclick="revelarRespuesta()">👁 Revelar resp.</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'reveal_answer',answer:''});document.getElementById('reveal-overlay').classList.remove('visible')">✖ Revelar</button>
+                    <button class="btn btn-dark" onclick="preguntaSorpresa()">🎲 Sorpresa</button>
+                </div>
+                <div class="section-title" style="margin-top:5px;">🎯 Apuesta doble</div>
+                <div class="pts-grid" style="margin-bottom:5px;">
+                    <button class="pts-btn" style="border-color:var(--purple);color:var(--purple);" onclick="lanzarApuesta(0)">K</button>
+                    <button class="pts-btn" style="border-color:var(--pink);color:var(--pink);" onclick="lanzarApuesta(1)">M</button>
+                    <button class="pts-btn" style="border-color:var(--blue);color:var(--blue);" onclick="lanzarApuesta(2)">J</button>
+                </div>
+                <div class="btn-row" style="margin-bottom:5px;">
+                    <button id="btn-robo" class="btn" style="background:#1a0000;color:#ff3131;border:1px solid #ff3131;" onclick="activarRobo()">⚡ Robo turno</button>
+                </div>
+                <div class="tv-grid2">
+                    <button id="btn-cine" class="btn btn-dark" onclick="toggleCine()">🎬 Modo cine</button>
+                    <button id="btn-golden" class="btn btn-dark" onclick="toggleGoldenBg()">✨ Fondo dorado</button>
+                    <button class="btn btn-dark" onclick="lanzarReplay()">⏪ Replay</button>
+                </div>            </div>
         </div>
 
         <!-- ⑦ MÚSICA — colapsable -->
@@ -416,6 +468,15 @@
                     <button class="btn btn-dark" onclick="createGist()">✨ Crear Gist</button>
                 </div>
                 <div id="gist-status" style="font-size:.68rem;color:#555;margin-top:5px;"></div>
+                <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+                    <div class="section-title" style="margin-bottom:5px;">📁 preguntas.json</div>
+                    <div style="font-size:.68rem;color:#888;margin-bottom:6px;">Descarga el JSON y súbelo a GitHub para que cualquier dispositivo cargue las preguntas automáticamente.</div>
+                    <div class="btn-row">
+                        <button class="btn btn-green" onclick="exportarPreguntas()">⬇ Descargar JSON</button>
+                        <button class="btn btn-neon" onclick="document.getElementById('import-file').click()">⬆ Importar JSON</button>
+                        <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importarPreguntas(this)">
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -493,6 +554,15 @@
                 </div>
             </div>
         </div>
+        <div class="field" style="margin-top:4px;">
+            <label>🎵 Canción (opcional)</label>
+            <div style="display:flex;gap:6px;">
+                <select id="f-cancion" style="flex:1;background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.85rem;">
+                    <option value="">— Sin canción —</option>
+                </select>
+                <input type="number" id="f-cancion-seg" value="0" min="0" placeholder="seg" style="width:65px;background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.85rem;text-align:center;">
+            </div>
+        </div>
         <div class="btn-row" style="margin-top:14px;">
             <button class="btn btn-green" onclick="saveQuestion()">💾 Guardar</button>
             <button class="btn btn-dark" onclick="closeModal()">Cancelar</button>
@@ -509,7 +579,12 @@ let scores = [0,0,0];
 let cats = [], curQ = null, lastP = null, allQuestions = {};
 let usedQs = [];
 let timerInterval = null, timerSec = 0;
-let questions = []; // array de preguntas guardadas
+let questions = [];
+let playerStreaks = [0,0,0];
+let ruletaMult = 1;
+let apuestaActive = null;
+let roboActive = false;
+let bombActive = false; // array de preguntas guardadas
 
 // Cargar puntos
 const savedScores = localStorage.getItem('juego_puntos');
@@ -521,6 +596,15 @@ ably.connection.on('connected', () => {
 });
 
 function pub(ch, d) { channel.publish(ch, d); }
+
+// ── PANTALLA COMPLETA ──
+function toggleFS() {
+    if(!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(()=>{});
+    } else {
+        document.exitFullscreen();
+    }
+}
 
 // ── COLAPSABLES ──
 function toggleSection(btn) {
@@ -575,12 +659,12 @@ function toggleMobileView() {
 }
 
 // ── SCORES ──
-function updateAdminScores(publish=false) {
+function updateAdminScores(publish=false, scoreDelay=9500) {
     ['K','M','J'].forEach((l,i) => {
         const el = document.getElementById('s-'+i);
         if(el) el.innerText = l+': '+scores[i];
     });
-    if(publish) pub('tv', {type:'scores', vals: scores});
+    if(publish) pub('tv', {type:'scores', vals: scores, delay: scoreDelay});
 }
 
 // ── PREGUNTAS: GIST + ABLY ──
@@ -622,10 +706,12 @@ async function createGist() {
 }
 
 async function gistLoad() {
-    if(!GIST_ID) return null;
+    const id    = localStorage.getItem('nexus_gist_id');
+    const token = localStorage.getItem('nexus_gist_token');
+    if(!id) return null;
     try {
-        const r = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-            headers: GIST_TOKEN ? {Authorization: `token ${GIST_TOKEN}`} : {}
+        const r = await fetch(`https://api.github.com/gists/${id}`, {
+            headers: token ? {Authorization: `token ${token}`} : {}
         });
         if(!r.ok) return null;
         const data = await r.json();
@@ -635,11 +721,13 @@ async function gistLoad() {
 }
 
 async function gistSave(qs) {
-    if(!GIST_ID || !GIST_TOKEN) return;
+    const id    = localStorage.getItem('nexus_gist_id');
+    const token = localStorage.getItem('nexus_gist_token');
+    if(!id || !token) return;
     try {
-        await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        await fetch(`https://api.github.com/gists/${id}`, {
             method: 'PATCH',
-            headers: {Authorization: `token ${GIST_TOKEN}`, 'Content-Type':'application/json'},
+            headers: {Authorization: `token ${token}`, 'Content-Type':'application/json'},
             body: JSON.stringify({files:{'nexus_questions.json':{content: JSON.stringify(qs)}}})
         });
     } catch(e) {}
@@ -652,33 +740,39 @@ function loadQuestions() {
         rebuildFromQuestions();
         buildBoard();
         syncTV();
-        // Actualizar desde Gist en segundo plano por si hay cambios
-        if(GIST_ID) gistLoad().then(qs => {
-            if(qs && JSON.stringify(qs) !== JSON.stringify(questions)) {
-                questions = qs;
-                localStorage.setItem('nexus_questions', JSON.stringify(qs));
-                rebuildFromQuestions(); buildBoard(); syncTV();
-            }
-        });
+        // Actualizar desde preguntas.json en segundo plano por si hay cambios
+        fetch('preguntas.json?t='+Date.now())
+            .then(r=>r.json())
+            .then(qs => {
+                if(qs && qs.length && JSON.stringify(qs) !== JSON.stringify(questions)) {
+                    questions = qs;
+                    localStorage.setItem('nexus_questions', JSON.stringify(qs));
+                    rebuildFromQuestions(); buildBoard(); syncTV();
+                }
+            }).catch(()=>{});
     } else {
         document.getElementById('board-grid').innerHTML =
             '<div style="grid-column:1/-1;color:var(--neon);font-size:.8rem;padding:20px;text-align:center;">⏳ Cargando preguntas...</div>';
-        // 1. Intentar Gist
-        gistLoad().then(qs => {
-            if(qs && qs.length) {
-                questions = qs;
-                localStorage.setItem('nexus_questions', JSON.stringify(qs));
-                rebuildFromQuestions(); buildBoard(); syncTV();
-            } else {
-                // 2. Pedir a otros admins
+        // 1. Intentar preguntas.json del servidor
+        fetch('preguntas.json?t='+Date.now())
+            .then(r=>r.json())
+            .then(qs => {
+                if(qs && qs.length) {
+                    questions = qs;
+                    localStorage.setItem('nexus_questions', JSON.stringify(qs));
+                    rebuildFromQuestions(); buildBoard(); syncTV();
+                } else {
+                    // 2. Pedir a otros admins por Ably
+                    channel.publish('request_questions', {});
+                    setTimeout(() => {
+                        if(!questions.length)
+                            document.getElementById('board-grid').innerHTML =
+                                '<div style="grid-column:1/-1;color:#555;font-size:.8rem;padding:20px;text-align:center;">Ve a <b style="color:var(--neon)">✏️ PREGUNTAS</b> para añadir preguntas</div>';
+                    }, 3000);
+                }
+            }).catch(()=>{
                 channel.publish('request_questions', {});
-                setTimeout(() => {
-                    if(!questions.length)
-                        document.getElementById('board-grid').innerHTML =
-                            '<div style="grid-column:1/-1;color:#555;font-size:.8rem;padding:20px;text-align:center;">Ve a <b style="color:var(--neon)">✏️ PREGUNTAS</b> para añadir preguntas</div>';
-                }, 3000);
-            }
-        });
+            });
     }
 }
 
@@ -759,6 +853,18 @@ function selectQuestion(cat, pts, catIdx, qId, cellEl) {
         card.style.background  = isCorrect ? 'rgba(0,255,136,.1)' : '';
     });
     document.getElementById('voto-panel').style.display = 'none';
+    // Mostrar panel de canción si la pregunta tiene una asignada
+    const musicPanel = document.getElementById('q-music-panel');
+    if(q.cancion) {
+        const cancionNombre = Object.values(musicFiles).find(c=>c.archivo===q.cancion)?.nombre || q.cancion;
+        document.getElementById('q-music-name').innerText = `🎵 ${cancionNombre} (desde ${q.cancionSeg||0}s)`;
+        musicPanel.style.display = 'block';
+        // Preseleccionar en el reproductor
+        musicSelect(Object.keys(musicFiles).find(k=>musicFiles[k].archivo===q.cancion) || cancionNombre);
+        document.getElementById('music-start').value = q.cancionSeg || 0;
+    } else {
+        musicPanel.style.display = 'none';
+    }
     pub('tv', {type:'open_q', cat, pts, catIdx, txt:q.txt, o1:q.o1, o2:q.o2, o3:q.o3, o4:q.o4});
     pub('status','close');
     stopTimer();
@@ -838,14 +944,41 @@ channel.subscribe('pulso-web', (m) => {
 
 function resolve(ok, direct=false) {
     if(!lastP) return alert('Nadie pulsó');
-    const pts = parseInt(curQ.pts) * (doublePoints ? 2 : 1);
+    let pts = parseInt(curQ.pts) * (doublePoints ? 2 : 1) * ruletaMult;
+    // Bomba: acierto normal, fallo doble
+    if(bombActive && !ok) pts = parseInt(curQ.pts) * 2;
+    bombActive = false;
+    // Apuesta doble
+    if(apuestaActive && apuestaActive.id === lastP.id) {
+        pts = ok ? pts + apuestaActive.pts : pts - apuestaActive.pts;
+        apuestaActive = null;
+        document.getElementById('btn-apuesta').style.background = '';
+    }
     if(!rehearsalMode) {
         scores[lastP.id] += ok ? pts : -pts;
         localStorage.setItem('juego_puntos', JSON.stringify(scores));
     }
+    // Rachas
+    if(ok) {
+        playerStreaks[lastP.id]++;
+        if(playerStreaks[lastP.id] >= 2) {
+            pub('tv', {type:'racha', name: lastP.name, color: playerColors[lastP.id], count: playerStreaks[lastP.id]});
+        }
+    } else {
+        playerStreaks[lastP.id] = 0;
+        // Robo de turno
+        if(roboActive) {
+            roboActive = false;
+            pub('tv', {type:'robo_turno'});
+            pub('status','open');
+            document.getElementById('btn-robo').style.background = '';
+            return; // no cerrar el monitor todavía
+        }
+    }
+    ruletaMult = 1; // reset ruleta
     pub('tv', {type: direct ? 'feedback_direct' : 'feedback', correct:ok});
     if(ok && direct) pub('tv', {type:'effect', effect:'confetti'});
-    updateAdminScores(true);
+    updateAdminScores(true, direct ? 3500 : 9500);
     addHist(`${curQ.cat} ${curQ.pts}pts — ${lastP.name}`, ok);
     const qId = `q-${cats.indexOf(curQ.cat)}-${curQ.pts}`;
     if(!usedQs.includes(qId)) { usedQs.push(qId); localStorage.setItem('preguntas_usadas', JSON.stringify(usedQs)); }
@@ -867,6 +1000,203 @@ function toggleLogo() {
     btn.style.background = logoOn ? 'var(--gold)' : '';
     btn.style.color = logoOn ? '#000' : '';
     btn.innerText = logoOn ? '🎬 Ocultar Logo' : '🎬 Logo';
+}
+
+// ── NUEVAS FUNCIONES ──
+const playerNames  = ['Kinverlys','María','Joise'];
+const playerColors = ['#a020f0','#ff69b4','#4488ff'];
+
+function mostrarGanador() {
+    const maxPts = Math.max(...scores);
+    const idx = scores.indexOf(maxPts);
+    pub('tv', {type:'winner', name: playerNames[idx], color: playerColors[idx]});
+}
+
+function lanzarRondaMusical() {
+    pub('tv', {type:'musical_round', dur:5000});
+}
+
+function introJugador(idx) {
+    pub('tv', {type:'intro_player', name: playerNames[idx], color: playerColors[idx], role: 'JUGADOR'});
+}
+
+function momentoEstelar() {
+    const maxPts = Math.max(...scores);
+    const idx = scores.indexOf(maxPts);
+    pub('tv', {type:'momento_estelar', name: playerNames[idx], color: playerColors[idx]});
+}
+
+function marcarFuego() {
+    if(!curQ) return alert('Selecciona una pregunta primero');
+    const qId = `q-${cats.indexOf(curQ.cat)}-${curQ.pts}`;
+    pub('tv', {type:'fuego_q', qId});
+}
+
+function marcarBomba() {
+    if(!curQ) return alert('Selecciona una pregunta primero');
+    const qId = `q-${cats.indexOf(curQ.cat)}-${curQ.pts}`;
+    pub('tv', {type:'bomba_q', qId});
+    doublePoints = true; // bomba = doble penalización
+}
+
+function lanzarRuleta() {
+    const mults = [1,1,2,2,3,1,2,1];
+    const result = mults[Math.floor(Math.random()*mults.length)];
+    ruletaMult = result;
+    pub('tv', {type:'ruleta', mult: result});
+}
+
+let cineMode = false;
+function toggleCine() {
+    cineMode = !cineMode;
+    pub('tv', {type: cineMode ? 'cine_on' : 'cine_off'});
+    const btn = document.getElementById('btn-cine');
+    if(btn) { btn.style.background = cineMode ? '#333' : ''; btn.innerText = cineMode ? '🎬 Cine ON' : '🎬 Modo cine'; }
+}
+
+let goldenBg = false;
+function toggleGoldenBg() {
+    goldenBg = !goldenBg;
+    pub('tv', {type: goldenBg ? 'golden_bg_on' : 'golden_bg_off'});
+    const btn = document.getElementById('btn-golden');
+    if(btn) { btn.style.background = goldenBg ? 'var(--gold)' : ''; btn.style.color = goldenBg ? '#000' : ''; }
+}
+
+function lanzarReplay() {
+    if(!lastP || !curQ) return alert('Nadie ha pulsado aún');
+    pub('tv', {type:'replay', name: lastP.name, color: playerColors[lastP.id], info: curQ.cat + ' — ' + curQ.pts + ' pts'});
+}
+
+let ceremonyIdx = 0;
+function lanzarCeremonia() {
+    const ranked = scores.map((pts,i)=>({pts,i})).sort((a,b)=>b.pts-a.pts);
+    ceremonyIdx = 0;
+    function showNext() {
+        if(ceremonyIdx >= ranked.length) return;
+        const r = ranked[ranked.length - 1 - ceremonyIdx]; // de menor a mayor
+        pub('tv', {type:'ceremony', pos: ranked.length-1-ceremonyIdx, name: playerNames[r.i], color: playerColors[r.i], pts: r.pts});
+        ceremonyIdx++;
+    }
+    showNext();
+    document.getElementById('btn-ceremony-next').style.display = 'block';
+}
+function ceremoniaSiguiente() {
+    const ranked = scores.map((pts,i)=>({pts,i})).sort((a,b)=>b.pts-a.pts);
+    if(ceremonyIdx >= ranked.length) {
+        pub('tv', {type:'hide_ceremony'});
+        document.getElementById('btn-ceremony-next').style.display = 'none';
+        return;
+    }
+    const r = ranked[ranked.length - 1 - ceremonyIdx];
+    pub('tv', {type:'ceremony', pos: ranked.length-1-ceremonyIdx, name: playerNames[r.i], color: playerColors[r.i], pts: r.pts});
+    ceremonyIdx++;
+}
+
+function lanzarDiscurso() {
+    const maxPts = Math.max(...scores);
+    const idx = scores.indexOf(maxPts);
+    pub('tv', {type:'speech', name: playerNames[idx], color: playerColors[idx]});
+}
+
+function revelarRespuesta() {
+    if(!curQ) return alert('No hay pregunta activa');
+    const labels = ['A','B','C','D'];
+    const opts = [curQ.o1,curQ.o2,curQ.o3,curQ.o4];
+    const idx = labels.indexOf(curQ.correct);
+    const answer = `${curQ.correct}) ${opts[idx]||''}`;
+    pub('tv', {type:'reveal_answer', answer});
+}
+
+function cambiarPregunta() {
+    if(!curQ) return alert('No hay pregunta activa');
+    const qId = `q-${cats.indexOf(curQ.cat)}-${curQ.pts}`;
+    usedQs = usedQs.filter(q => q !== qId);
+    localStorage.setItem('preguntas_usadas', JSON.stringify(usedQs));
+    const cell = document.getElementById('admin-'+qId);
+    if(cell) { cell.classList.remove('used','active-q'); }
+    // Cerrar escena sin feedback
+    pub('tv', {type:'close_question'});
+    document.getElementById('monitor').style.display = 'none';
+    lastP = null; curQ = null; stopTimer();
+    buildBoard(); syncTV();
+}
+
+function lanzarApuesta(idx) {
+    const pts = parseInt(document.getElementById('pts-amount').value)||200;
+    apuestaActive = {id: idx, pts};
+    pub('tv', {type:'apuesta', name: playerNames[idx], pts});
+    document.getElementById('btn-apuesta').style.background = 'var(--gold)';
+    document.getElementById('btn-apuesta').style.color = '#000';
+}
+
+function activarRobo() {
+    roboActive = true;
+    pub('tv', {type:'message', text:'⚡ ROBO DE TURNO ACTIVO'});
+    document.getElementById('btn-robo').style.background = '#ff3131';
+}
+
+function preguntaSorpresa() {
+    const available = [];
+    cats.forEach((cat,ci) => {
+        [200,400,600,800,1000].forEach(pts => {
+            const qId = `q-${ci}-${pts}`;
+            if(!usedQs.includes(qId) && allQuestions[cat]?.[String(pts)]) {
+                available.push({cat, pts: String(pts), ci, qId});
+            }
+        });
+    });
+    if(!available.length) return alert('No quedan preguntas disponibles');
+    const pick = available[Math.floor(Math.random()*available.length)];
+    const cell = document.getElementById('admin-'+pick.qId);
+    if(cell) selectQuestion(pick.cat, pick.pts, pick.ci, pick.qId, cell);
+}
+
+// ── TOAST ──
+function showToast(msg) {
+    let t = document.getElementById('admin-toast');
+    if(!t) { t=document.createElement('div'); t.id='admin-toast'; t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:white;padding:8px 18px;border-radius:20px;font-size:.8rem;z-index:9999;pointer-events:none;transition:opacity .3s;'; document.body.appendChild(t); }
+    t.innerText = msg; t.style.opacity='1';
+    clearTimeout(t._t); t._t = setTimeout(()=>t.style.opacity='0', 2500);
+}
+
+// ── MECÁNICAS ──
+
+function marcarFuego() {
+    if(!curQ) return alert('Selecciona una pregunta primero');
+    const qId = `q-${cats.indexOf(curQ.cat)}-${curQ.pts}`;
+    pub('tv', {type:'fuego_q', qId});
+    ruletaMult = 2;
+    showToast('🔥 Fuego activo — puntos ×2');
+}
+
+function marcarBomba() {
+    if(!curQ) return alert('Selecciona una pregunta primero');
+    const qId = `q-${cats.indexOf(curQ.cat)}-${curQ.pts}`;
+    pub('tv', {type:'bomba_q', qId});
+    bombActive = true;
+    showToast('💣 Bomba activa — fallo = doble penalización');
+}
+
+function lanzarRuleta() {
+    const mults = [1,1,2,2,3,1,2,1];
+    const result = mults[Math.floor(Math.random()*mults.length)];
+    ruletaMult = result;
+    pub('tv', {type:'ruleta', mult: result});
+    showToast(`🎰 Ruleta: ×${result}`);
+}
+
+function lanzarApuesta(playerIdx) {
+    const pts = parseInt(document.getElementById('pts-amount').value)||200;
+    apuestaActive = {id: playerIdx, pts};
+    pub('tv', {type:'apuesta', name: playerNames[playerIdx], pts});
+    showToast(`🎯 ${playerNames[playerIdx]} apuesta ${pts} pts`);
+}
+
+function activarRobo() {
+    roboActive = !roboActive;
+    const btn = document.getElementById('btn-robo');
+    if(btn) { btn.style.background = roboActive ? '#ff3131' : ''; btn.style.color = roboActive ? '#fff' : ''; btn.innerText = roboActive ? '⚡ Robo ON' : '⚡ Robo turno'; }
+    if(roboActive) showToast('⚡ Robo activo — si falla, otros pueden pulsar');
 }
 
 // ── MÚSICA ──
@@ -922,12 +1252,23 @@ function musicPlay() {
     const c = musicFiles[musicCurrentKey];
     const start = parseFloat(document.getElementById('music-start').value) || 0;
     const vol   = parseFloat(document.getElementById('music-vol').value);
-    // Preview en admin
     adminAudio.currentTime = start;
     adminAudio.volume = vol;
     adminAudio.play().catch(()=>{});
-    // Enviar a TV — usa la ruta del archivo (en caché)
     pub('tv', {type:'music_play', file: c.archivo, start, vol});
+}
+
+function playQuestionMusic() {
+    if(!curQ || !curQ.cancion) return;
+    const vol = parseFloat(document.getElementById('music-vol')?.value || 0.8);
+    const start = curQ.cancionSeg || 0;
+    // Reproducir en admin
+    adminAudio.src = curQ.cancion;
+    adminAudio.currentTime = start;
+    adminAudio.volume = vol;
+    adminAudio.play().catch(()=>{});
+    // Enviar a TV
+    pub('tv', {type:'music_play', file: curQ.cancion, start, vol});
 }
 function musicPause() {
     adminAudio.pause();
@@ -953,7 +1294,7 @@ function exportarPreguntas() {
     const blob = new Blob([JSON.stringify(questions, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `nexus_preguntas_${new Date().toISOString().slice(0,10)}.json`;
+    a.download = 'preguntas.json'; // mismo nombre que el archivo del servidor
     a.click();
     URL.revokeObjectURL(a.href);
 }
@@ -1079,7 +1420,7 @@ function addPts(idx, subtract=false) {
     const amt = parseInt(document.getElementById('pts-amount').value)||0;
     scores[idx] += subtract ? -amt : amt;
     localStorage.setItem('juego_puntos', JSON.stringify(scores));
-    updateAdminScores(true);
+    updateAdminScores(true, 0); // inmediato, sin delay
 }
 
 // ── MENSAJE TV ──
@@ -1188,6 +1529,14 @@ function openModal(id=null) {
     document.getElementById('modal-bg').style.display = 'flex';
     document.getElementById('modal-title').innerText = id ? 'EDITAR PREGUNTA' : 'NUEVA PREGUNTA';
     document.getElementById('edit-id').value = id||'';
+    // Poblar select de canciones
+    const cancionSel = document.getElementById('f-cancion');
+    cancionSel.innerHTML = '<option value="">— Sin canción —</option>';
+    Object.values(musicFiles).forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.archivo; o.innerText = c.nombre;
+        cancionSel.appendChild(o);
+    });
     if(id) {
         const q = questions.find(x=>x.id===id);
         if(!q) return;
@@ -1199,11 +1548,15 @@ function openModal(id=null) {
         document.getElementById('f-o3').value = q.o3||'';
         document.getElementById('f-o4').value = q.o4||'';
         document.querySelector(`input[name="correct"][value="${q.correct}"]`).checked = true;
+        cancionSel.value = q.cancion || '';
+        document.getElementById('f-cancion-seg').value = q.cancionSeg || 0;
     } else {
         populateCatSelect();
         ['f-txt','f-o1','f-o2','f-o3','f-o4'].forEach(id=>document.getElementById(id).value='');
         document.getElementById('f-pts').value = '200';
         document.querySelector('input[name="correct"][value="A"]').checked = true;
+        cancionSel.value = '';
+        document.getElementById('f-cancion-seg').value = 0;
     }
 }
 function closeModal() { document.getElementById('modal-bg').style.display='none'; }
@@ -1220,13 +1573,15 @@ function saveQuestion() {
     const o3  = document.getElementById('f-o3').value.trim();
     const o4  = document.getElementById('f-o4').value.trim();
     const correct = document.querySelector('input[name="correct"]:checked').value;
+    const cancion = document.getElementById('f-cancion').value;
+    const cancionSeg = parseInt(document.getElementById('f-cancion-seg').value)||0;
     if(!cat||!txt||!o1||!o2) return alert('Rellena al menos categoría, pregunta y opciones A y B');
     const editId = document.getElementById('edit-id').value;
     if(editId) {
         const idx = questions.findIndex(x=>x.id===editId);
-        if(idx>=0) questions[idx] = {...questions[idx], cat,pts,txt,o1,o2,o3,o4,correct};
+        if(idx>=0) questions[idx] = {...questions[idx], cat,pts,txt,o1,o2,o3,o4,correct,cancion,cancionSeg};
     } else {
-        questions.push({id: Date.now().toString(), cat,pts,txt,o1,o2,o3,o4,correct});
+        questions.push({id: Date.now().toString(), cat,pts,txt,o1,o2,o3,o4,correct,cancion,cancionSeg});
     }
     saveQuestions();
     rebuildFromQuestions();
