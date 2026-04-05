@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CONTROL — NEXUS</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -572,12 +575,12 @@ function toggleMobileView() {
 }
 
 // ── SCORES ──
-function updateAdminScores() {
+function updateAdminScores(publish=false) {
     ['K','M','J'].forEach((l,i) => {
         const el = document.getElementById('s-'+i);
         if(el) el.innerText = l+': '+scores[i];
     });
-    pub('tv', {type:'scores', vals: scores});
+    if(publish) pub('tv', {type:'scores', vals: scores});
 }
 
 // ── PREGUNTAS: GIST + ABLY ──
@@ -766,7 +769,7 @@ function selectQuestion(cat, pts, catIdx, qId, cellEl) {
 function syncTV() {
     if(!cats.length) return;
     usedQs = localStorage.getItem('preguntas_usadas') ? JSON.parse(localStorage.getItem('preguntas_usadas')) : [];
-    pub('tv', {type:'init', cats, usedQ: usedQs});
+    pub('tv', {type:'init', cats, usedQ: usedQs, scores});
 }
 
 // ── TIMER ──
@@ -842,7 +845,7 @@ function resolve(ok, direct=false) {
     }
     pub('tv', {type: direct ? 'feedback_direct' : 'feedback', correct:ok});
     if(ok && direct) pub('tv', {type:'effect', effect:'confetti'});
-    updateAdminScores();
+    updateAdminScores(true);
     addHist(`${curQ.cat} ${curQ.pts}pts — ${lastP.name}`, ok);
     const qId = `q-${cats.indexOf(curQ.cat)}-${curQ.pts}`;
     if(!usedQs.includes(qId)) { usedQs.push(qId); localStorage.setItem('preguntas_usadas', JSON.stringify(usedQs)); }
@@ -1076,7 +1079,7 @@ function addPts(idx, subtract=false) {
     const amt = parseInt(document.getElementById('pts-amount').value)||0;
     scores[idx] += subtract ? -amt : amt;
     localStorage.setItem('juego_puntos', JSON.stringify(scores));
-    updateAdminScores();
+    updateAdminScores(true);
 }
 
 // ── MENSAJE TV ──

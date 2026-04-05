@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>TV — EL SHOW</title>
-    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <!-- Preconexiones para reducir latencia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.ably.com">
+    <link rel="preconnect" href="https://realtime.ably.io">
+    <!-- Fuentes con display=swap para no bloquear el render -->
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@900&display=swap" rel="stylesheet">
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
     <style>
         :root {
             --bg:   #0a0e6e;
@@ -19,7 +26,7 @@
         html, body {
             width: 100%; height: 100%;
             background: var(--bg);
-            font-family: 'Bebas Neue', sans-serif;
+            font-family: 'Bebas Neue', 'Arial Black', sans-serif;
             color: white; overflow: hidden;
             display: flex; flex-direction: column;
         }
@@ -422,6 +429,7 @@ channel.subscribe('tv', (msg) => {
 
     if(d.type === 'init') {
         usedQuestions = d.usedQ || [];
+        if(d.scores) localScores = d.scores;
         const grid = document.getElementById('main-grid');
         grid.innerHTML = '';
         const cols = d.cats.length;
@@ -948,6 +956,15 @@ async function preloadAll() {
     const bar   = document.getElementById('unlock-bar');
     const detail= document.getElementById('unlock-detail');
     const title = document.getElementById('unlock-title');
+
+    // Esperar a que Ably esté conectado antes de continuar
+    detail.innerText = 'Conectando al servidor...';
+    bar.style.width = '5%';
+    await new Promise(resolve => {
+        if(ably.connection.state === 'connected') { resolve(); return; }
+        ably.connection.once('connected', resolve);
+        setTimeout(resolve, 5000); // timeout por si falla
+    });
 
     const resources = [
         { label: 'suspenso.mp3',   audio: sfx.suspenso },
