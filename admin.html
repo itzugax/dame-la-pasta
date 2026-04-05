@@ -30,31 +30,51 @@
         .tab{flex:1;padding:11px 8px;cursor:pointer;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#555;border-bottom:3px solid transparent;transition:.2s;text-align:center;}
         .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 
-        /* ── LAYOUT MÓVIL: columna única ── */
-        #body-wrap{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
+        /* ── LAYOUT MÓVIL: dos vistas con botón flotante ── */
+        #body-wrap{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;position:relative;}
 
-        /* TABLERO — compacto arriba */
+        /* TABLERO */
         #board-wrap{background:#04063a;padding:6px;flex-shrink:0;}
         #board-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
         .b-col{display:flex;flex-direction:column;gap:3px;}
         .b-header{color:white;text-align:center;font-family:'Bebas Neue';font-size:clamp(.55rem,2.2vw,1rem);padding:3px 1px;line-height:1.1;flex-shrink:0;}
-        .b-cell{background:#1a22b8;border:2px solid #00aaff;color:var(--gold);font-family:'Bebas Neue';font-size:clamp(.8rem,3.5vw,1.6rem);height:clamp(36px,8vw,56px);display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;transition:.15s;box-shadow:0 0 6px rgba(0,170,255,.2);}
+        .b-cell{background:#1a22b8;border:2px solid #00aaff;color:var(--gold);font-family:'Bebas Neue';font-size:clamp(.9rem,4vw,1.8rem);height:clamp(44px,10vw,64px);display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;transition:.15s;box-shadow:0 0 6px rgba(0,170,255,.2);}
         .b-cell:active{transform:scale(.93);background:#2530d0;}
         .b-cell.used{opacity:.15;pointer-events:none;}
         .b-cell.active-q{border-color:var(--gold);background:rgba(245,197,24,.15);box-shadow:0 0 12px rgba(245,197,24,.4);}
         .b-cell.no-q{opacity:.12;pointer-events:none;border-color:#333;}
 
-        /* PANEL — scroll vertical debajo del tablero */
-        #ctrl-panel{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+        /* PANEL — ocupa todo en móvil, oculto cuando se ve tablero */
+        #ctrl-panel{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--panel);}
         #ctrl-panel::-webkit-scrollbar{width:3px;}
         #ctrl-panel::-webkit-scrollbar-thumb{background:var(--border);}
+
+        /* Botón flotante para alternar tablero/controles en móvil */
+        #fab-toggle{
+            display:none; /* solo en móvil */
+            position:fixed; bottom:20px; right:16px; z-index:500;
+            width:56px; height:56px; border-radius:50%;
+            background:var(--gold); color:#000; border:none;
+            font-size:1.4rem; cursor:pointer;
+            box-shadow:0 4px 20px rgba(245,197,24,.5);
+            align-items:center; justify-content:center;
+            transition:.2s;
+        }
+        #fab-toggle:active{transform:scale(.9);}
+
+        /* En móvil, cuando se muestra solo controles, ocultar tablero y viceversa */
+        @media (max-width:767px) {
+            #fab-toggle{display:flex;}
+            #board-wrap.mobile-hidden{display:none;}
+            #ctrl-panel.mobile-hidden{display:none;}
+        }
 
         .section{padding:12px 14px;border-bottom:1px solid var(--border);}
         .section-title{font-size:.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:8px;opacity:.8;}
         .btn-row{display:flex;gap:6px;flex-wrap:wrap;}
 
         /* Botones grandes para dedos */
-        .btn{padding:12px 10px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;transition:all .1s;flex:1;min-width:80px;min-height:44px;}
+        .btn{padding:13px 10px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;transition:all .1s;flex:1;min-width:80px;min-height:48px;}
         .btn:active{transform:scale(.94);}
         .btn-neon{background:var(--neon);color:#000;}
         .btn-gold{background:var(--gold);color:#000;}
@@ -63,13 +83,13 @@
         .btn-dark{background:#141820;color:#fff;border:1px solid var(--border);}
         .btn-purple{background:var(--purple);color:#fff;}
 
-        #m-title{font-family:'Bebas Neue';font-size:1.1rem;color:var(--gold);margin-bottom:4px;}
-        #m-txt{font-size:.82rem;color:#ddd;line-height:1.4;padding:8px;background:#0a0a0a;border-radius:8px;border-left:3px solid var(--neon);margin-bottom:6px;}
+        #m-title{font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold);margin-bottom:4px;}
+        #m-txt{font-size:.85rem;color:#ddd;line-height:1.4;padding:8px;background:#0a0a0a;border-radius:8px;border-left:3px solid var(--neon);margin-bottom:6px;}
         #m-opts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px;}
-        .opt-preview{padding:7px 8px;background:#111;border:1px solid var(--border);border-radius:8px;font-size:.78rem;color:#aaa;}
+        .opt-preview{padding:8px;background:#111;border:1px solid var(--border);border-radius:8px;font-size:.8rem;color:#aaa;}
         .opt-preview b{color:var(--gold);}
 
-        #who-name{font-family:'Bebas Neue';font-size:1.6rem;text-align:center;padding:12px;border-radius:10px;background:#000;border:2px solid var(--neon);color:var(--neon);letter-spacing:2px;margin-bottom:8px;}
+        #who-name{font-family:'Bebas Neue';font-size:1.8rem;text-align:center;padding:14px;border-radius:10px;background:#000;border:2px solid var(--neon);color:var(--neon);letter-spacing:2px;margin-bottom:8px;}
         @keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(0,242,255,.5);}50%{box-shadow:0 0 0 8px rgba(0,242,255,0);}}
         #who-name.pulsing{animation:pulse-border .9s infinite;}
 
@@ -81,7 +101,7 @@
         @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
 
         .pts-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
-        .pts-btn{padding:10px 4px;border-radius:9px;border:2px solid var(--border);background:#111;color:white;cursor:pointer;font-weight:700;font-size:.78rem;text-align:center;transition:.1s;min-height:44px;}
+        .pts-btn{padding:12px 4px;border-radius:9px;border:2px solid var(--border);background:#111;color:white;cursor:pointer;font-weight:700;font-size:.82rem;text-align:center;transition:.1s;min-height:48px;}
         .pts-btn:active{transform:scale(.93);}
 
         #reset-confirm{display:none;background:#1a0000;border:1px solid var(--red);border-radius:10px;padding:10px;text-align:center;margin-top:8px;}
@@ -116,7 +136,16 @@
         .hist-item.correct{border-left-color:var(--green);}
         .hist-item.wrong{border-left-color:var(--red);}
 
-        /* PC: layout horizontal cuando hay espacio */
+        /* COLAPSABLES */
+        .toggle-btn{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+        .toggle-btn:active{opacity:.7;}
+        .chevron{font-size:.7rem;transition:transform .2s;}
+        .toggle-btn.open .chevron{transform:rotate(180deg);}
+
+        /* VOTO HIGHLIGHT */
+        .voto-highlight{border-left:4px solid var(--neon);background:rgba(0,242,255,.04);}
+
+        /* PC: layout horizontal */
         @media (min-width: 768px) {
             #body-wrap{flex-direction:row;}
             #board-wrap{flex:1;padding:1vw;display:flex;flex-direction:column;}
@@ -127,6 +156,12 @@
             #modal-bg{align-items:center;}
             #modal{border-radius:16px;width:min(500px,95vw);max-height:90vh;}
         }
+
+        /* CONTADOR DE RONDA */
+        #round-badge{font-family:'Bebas Neue';font-size:.9rem;color:#555;letter-spacing:2px;padding:2px 10px;border:1px solid #333;border-radius:20px;}
+
+        /* DOBLE PUNTOS ACTIVO */
+        #double-indicator{display:none;font-family:'Bebas Neue';font-size:.8rem;color:var(--gold);background:rgba(255,195,0,.15);border:1px solid var(--gold);border-radius:20px;padding:2px 10px;animation:blink .8s infinite;}
 </style>
 </head>
 <body>
@@ -139,7 +174,11 @@
         <div class="score-pill" style="color:var(--pink);border-color:var(--pink);" id="s-1">M: 0</div>
         <div class="score-pill" style="color:var(--blue);border-color:var(--blue);" id="s-2">J: 0</div>
     </div>
-    <div id="conn-status"><span id="conn-dot"></span>CONECTANDO...</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <div id="double-indicator">✖2 DOBLE</div>
+        <div id="round-badge">R1</div>
+        <div id="conn-status"><span id="conn-dot"></span>CONECTANDO...</div>
+    </div>
 </div>
 
 <!-- TABS -->
@@ -154,27 +193,46 @@
         <div id="board-grid"></div>
     </div>
 
+    <!-- Botón flotante móvil -->
+    <button id="fab-toggle" onclick="toggleMobileView()">🎮</button>
+
     <!-- PANEL DERECHO -->
-    <div id="ctrl-panel">
-        <!-- TV -->
-        <div class="section">
-            <div class="section-title">📺 TV</div>
-            <div class="tv-grid2" style="margin-bottom:5px;">
-                <button class="btn btn-neon"  onclick="pub('tv',{type:'show_qrs'})">📱 QRs</button>
-                <button class="btn btn-dark"  onclick="pub('tv',{type:'hide_qrs'})">✖ QRs</button>
-                <button class="btn btn-gold"  id="btn-logo" onclick="toggleLogo()">🎬 Logo</button>
-                <button class="btn btn-dark"  onclick="syncTV()">🔄 Sync</button>
+    <div id="ctrl-panel" class="mobile-hidden">
+
+        <!-- ① QUIEN PULSÓ — siempre visible cuando hay alguien -->
+        <div id="voto-panel" class="section voto-highlight" style="display:none;">
+            <div id="who-name">---</div>
+            <div class="btn-row" style="margin-bottom:6px;">
+                <button class="btn btn-green" style="font-size:1rem;padding:14px;" onclick="resolve(true)">✅ CORRECTO</button>
+                <button class="btn btn-red"   style="font-size:1rem;padding:14px;" onclick="resolve(false)">❌ ERROR</button>
             </div>
-            <div style="display:flex;gap:5px;margin-top:5px;">
-                <input id="tv-msg-input" placeholder="Mensaje en TV..." style="flex:1;background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:6px 9px;font-size:.76rem;">
-                <button class="btn btn-purple" style="flex:none;padding:6px 9px;" onclick="showMessage()">▶</button>
+            <div class="btn-row" style="margin-bottom:6px;">
+                <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:1})">A</button>
+                <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:2})">B</button>
+                <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:3})">C</button>
+                <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:4})">D</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-green" style="opacity:.7;font-size:.78rem;" onclick="resolve(true,true)">⚡✅ Sin suspenso</button>
+                <button class="btn btn-red"   style="opacity:.7;font-size:.78rem;" onclick="resolve(false,true)">⚡❌ Sin suspenso</button>
             </div>
         </div>
 
-        <!-- MONITOR -->
+        <!-- ② PULSADORES — siempre visible -->
+        <div class="section">
+            <div class="btn-row">
+                <button class="btn btn-green" style="font-size:.95rem;" onclick="pub('status','open')">🟢 HABILITAR</button>
+                <button class="btn btn-red"   style="font-size:.95rem;" onclick="pub('status','close')">🔴 BLOQUEAR</button>
+            </div>
+            <div class="btn-row" style="margin-top:5px;">
+                <button class="btn btn-dark" onclick="lanzarCuentaAtras()" style="font-size:.8rem;">3️⃣ Cuenta atrás</button>
+                <button class="btn" id="btn-rehearsal" style="background:#331100;color:#ff6600;border:1px solid #ff6600;font-size:.8rem;" onclick="toggleRehearsal()">🎭 Ensayo</button>
+            </div>
+        </div>
+
+        <!-- ③ PREGUNTA ACTIVA — visible cuando hay pregunta -->
         <div id="monitor" style="display:none;">
             <div class="section">
-                <div class="section-title">🎯 Pregunta activa</div>
                 <div id="m-title"></div>
                 <div id="m-txt"></div>
                 <div id="m-opts">
@@ -185,191 +243,196 @@
                 </div>
             </div>
             <div class="section">
-                <div class="section-title">Flujo</div>
-                <div class="btn-row">
+                <div class="btn-row" style="margin-bottom:6px;">
                     <button class="btn btn-neon" onclick="pub('tv',{type:'show_txt'})">1. Pregunta</button>
                     <button class="btn btn-gold" onclick="pub('tv',{type:'show_ops'})">2. Opciones</button>
                 </div>
-            </div>
-            <div class="section">
-                <div class="section-title">Temporizador</div>
-                <div class="btn-row" style="align-items:center;margin-bottom:5px;">
+                <div class="btn-row" style="align-items:center;">
                     <input type="number" id="sec-input" value="30">
                     <div id="live-timer">--</div>
+                    <button class="btn btn-red"  id="btn-timer-start"  onclick="lanzarTiempo()">▶</button>
+                    <button class="btn btn-neon" id="btn-timer-pause"  onclick="pauseTimer()"  style="display:none;">⏸</button>
+                    <button class="btn btn-gold" id="btn-timer-resume" onclick="resumeTimer()" style="display:none;">▶▶</button>
+                    <button class="btn btn-dark" id="btn-timer-stop"   onclick="stopTimer()"   style="display:none;">⏹</button>
                 </div>
-                <div id="timer-state">detenido</div>
-                <div class="btn-row" style="margin-top:5px;">
-                    <button class="btn btn-red"   id="btn-timer-start"  onclick="lanzarTiempo()">▶ Start</button>
-                    <button class="btn btn-neon"  id="btn-timer-pause"  onclick="pauseTimer()" style="display:none;">⏸ Pausa</button>
-                    <button class="btn btn-gold"  id="btn-timer-resume" onclick="resumeTimer()" style="display:none;">▶ Seguir</button>
-                    <button class="btn btn-dark"  id="btn-timer-stop"   onclick="stopTimer()" style="display:none;">⏹ Stop</button>
+                <div id="timer-state" style="margin-top:3px;"></div>
+            </div>
+        </div>
+
+        <!-- ④ COMODINES — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" onclick="toggleSection(this)">🃏 Comodines <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <div style="display:flex;gap:5px;align-items:center;margin-bottom:7px;">
+                    <span style="font-size:.7rem;color:#888;">Seg:</span>
+                    <input type="number" id="comodin-sec" value="30">
+                </div>
+                <div class="pts-grid" style="margin-bottom:5px;">
+                    <button class="btn" style="background:#003d1a;color:#00ff88;border:1px solid #00ff88;" onclick="lanzarComodin('llamada')">📞 Llamada</button>
+                    <button class="btn" style="background:#1a1a00;color:#ffc300;border:1px solid #ffc300;" onclick="lanzarComodin('publico')">👥 Público</button>
+                    <button class="btn" style="background:#1a001a;color:#cc44ff;border:1px solid #cc44ff;" onclick="lanzarComodin('5050')">✂️ 50/50</button>
+                </div>
+                <button class="btn btn-dark" style="width:100%;font-size:.7rem;" onclick="cerrarComodin()">✖ Cerrar comodín</button>
+            </div>
+        </div>
+
+        <!-- ⑤ TV — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" onclick="toggleSection(this)">📺 TV <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <div class="tv-grid2" style="margin-bottom:6px;">
+                    <button class="btn btn-neon" onclick="mostrarQRs()">📱 QRs</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_qrs'})">✖ QRs</button>
+                    <button class="btn btn-gold" id="btn-logo" onclick="toggleLogo()">🎬 Logo</button>
+                    <button class="btn btn-dark" onclick="syncTV()">🔄 Sync</button>
+                </div>
+                <div style="display:flex;gap:5px;">
+                    <input id="tv-msg-input" placeholder="Mensaje en TV..." style="flex:1;background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.8rem;">
+                    <button class="btn btn-purple" style="flex:none;padding:8px 10px;" onclick="showMessage()">▶</button>
                 </div>
             </div>
-            <div class="section">
-                <div class="section-title">Pulsadores</div>
-                <div class="btn-row">
-                    <button class="btn btn-green" onclick="pub('status','open')">🟢 Habilitar</button>
-                    <button class="btn btn-red" onclick="pub('status','close')">🔴 Bloquear</button>
+        </div>
+
+        <!-- ⑥ EFECTOS — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" onclick="toggleSection(this)">🎬 Efectos <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <div class="btn-row" style="margin-bottom:6px;">
+                    <button class="btn" style="background:#1a1a00;color:var(--gold);border:1px solid var(--gold);font-size:.85rem;" onclick="toggleDouble()">✖2 Doble pts</button>
+                    <button class="btn btn-dark" onclick="nextRound()">➡ Sig. Ronda</button>
+                </div>
+                <div class="tv-grid2" style="margin-bottom:6px;">
+                    <button class="btn btn-dark" onclick="tvEffect('spotlight')">🔦 Spotlight</button>
+                    <button class="btn btn-dark" onclick="tvEffect('confetti')">🎊 Confetti</button>
+                    <button class="btn btn-dark" onclick="tvEffect('blackout')">⬛ Blackout</button>
+                    <button class="btn btn-dark" onclick="tvEffect('shake')">📳 Shake</button>
+                </div>
+                <div class="tv-grid2" style="margin-bottom:6px;">
+                    <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="pubScene('ganador')">🏆 Ganador</button>
+                    <button class="btn" style="background:#001a30;color:var(--neon);border:1px solid var(--neon);" onclick="pubScene('intro')">🎬 Intro</button>
+                    <button class="btn" style="background:#1a1a00;color:var(--gold);border:1px solid var(--gold);" onclick="pubScene('doble')">⚡ Doble pts</button>
+                    <button class="btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red);" onclick="pubScene('final')">🔥 Final</button>
+                </div>
+                <div class="tv-grid2">
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'tension'})">😰 Tensión</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'celebration'})">🎉 Celebración</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'thinking'})">🤔 Pensando</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'stop'})">⏹ Parar</button>
+                </div>
+                <div class="btn-row" style="margin-top:6px;">
+                    <button class="btn btn-dark" onclick="toggleBlackout()">🌑 Blackout TV</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'message',text:'¡VOLVEMOS EN UN MOMENTO!'})">⏸ Pausa show</button>
+                </div>
+                <div class="btn-row" style="margin-top:6px;">
+                    <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="mostrarPodio()">🏆 Podio final</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_podio'})">✖ Cerrar podio</button>
+                </div>
+                <div class="btn-row" style="margin-top:6px;">
+                    <button class="btn" style="background:#1a0000;color:#ff3131;border:1px solid #ff3131;" onclick="lanzarDesempate()">⚡ Desempate</button>
+                    <button class="btn btn-dark" onclick="pub('tv',{type:'hide_tiebreak'})">✖ Cerrar</button>
                 </div>
             </div>
-            <div id="voto-panel" class="section" style="display:none;">
-                <div class="section-title">⚡ Pulsó</div>
-                <div id="who-name">---</div>
-                <div class="btn-row" style="margin-bottom:5px;">
-                    <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:1})">A</button>
-                    <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:2})">B</button>
-                    <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:3})">C</button>
-                    <button class="btn btn-gold" onclick="pub('tv',{type:'select_op',op:4})">D</button>
+        </div>
+
+        <!-- ⑦ MÚSICA — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" onclick="toggleSection(this)">🎵 Música <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <div style="margin-bottom:6px;">
+                    <input id="music-file" type="file" accept="audio/*" multiple style="width:100%;background:#111;color:#aaa;border:1px solid var(--border);border-radius:8px;padding:5px;font-size:.7rem;cursor:pointer;">
+                </div>
+                <div id="music-list" style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;margin-bottom:6px;"></div>
+                <div id="music-controls" style="display:none;">
+                    <div style="font-size:.72rem;color:var(--neon);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="music-now-playing">—</div>
+                    <div style="display:flex;gap:5px;align-items:center;margin-bottom:5px;">
+                        <span style="font-size:.7rem;color:#888;">Desde seg:</span>
+                        <input type="number" id="music-start" value="0" min="0" style="width:60px;background:#111;color:white;border:1px solid var(--border);border-radius:6px;padding:6px;font-size:.85rem;text-align:center;">
+                    </div>
+                    <div class="btn-row" style="margin-bottom:5px;">
+                        <button class="btn btn-green" onclick="musicPlay()">▶ Play</button>
+                        <button class="btn btn-dark"  onclick="musicPause()">⏸</button>
+                        <button class="btn btn-red"   onclick="musicStop()">⏹</button>
+                    </div>
+                    <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.8" style="width:100%;accent-color:var(--gold);" oninput="pub('tv',{type:'music_volume',vol:parseFloat(this.value)})">
+                </div>
+            </div>
+        </div>
+
+        <!-- ⑧ PUNTOS MANUALES — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" onclick="toggleSection(this)">✏️ Puntos manuales <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <input type="number" id="pts-amount" value="200" placeholder="pts">
+                <div class="pts-grid" style="margin-top:6px;">
+                    <button class="pts-btn" style="border-color:var(--purple);color:var(--purple);" onclick="addPts(0)">+ K</button>
+                    <button class="pts-btn" style="border-color:var(--pink);color:var(--pink);" onclick="addPts(1)">+ M</button>
+                    <button class="pts-btn" style="border-color:var(--blue);color:var(--blue);" onclick="addPts(2)">+ J</button>
+                    <button class="pts-btn" style="border-color:var(--purple);color:var(--purple);opacity:.5;" onclick="addPts(0,true)">− K</button>
+                    <button class="pts-btn" style="border-color:var(--pink);color:var(--pink);opacity:.5;" onclick="addPts(1,true)">− M</button>
+                    <button class="pts-btn" style="border-color:var(--blue);color:var(--blue);opacity:.5;" onclick="addPts(2,true)">− J</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ⑨ HISTORIAL — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" onclick="toggleSection(this)">📋 Historial <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <div id="hist-list" style="max-height:120px;overflow-y:auto;"></div>
+                <button class="btn btn-dark" style="width:100%;margin-top:5px;font-size:.65rem;" onclick="document.getElementById('hist-list').innerHTML=''">Limpiar</button>
+            </div>
+        </div>
+
+        <!-- ⑩ NOTAS — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" onclick="toggleSection(this)">📝 Notas <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <textarea id="notes-area" rows="4" placeholder="Apuntes del show..."></textarea>
+            </div>
+        </div>
+
+        <!-- ⑪ SINCRONIZACIÓN — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" onclick="toggleSection(this)">☁️ Sincronización <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <div class="btn-row" style="margin-bottom:8px;">
+                    <button class="btn btn-green" onclick="exportarPreguntas()">⬇ Exportar preguntas</button>
+                    <button class="btn btn-neon"  onclick="document.getElementById('import-file').click()">⬆ Importar preguntas</button>
+                    <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importarPreguntas(this)">
+                </div>
+                <div class="field" style="margin-bottom:6px;">
+                    <label style="font-size:.65rem;color:#888;">Gist ID</label>
+                    <input id="cfg-gist-id" placeholder="abc123..." style="background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.8rem;width:100%;">
+                </div>
+                <div class="field" style="margin-bottom:6px;">
+                    <label style="font-size:.65rem;color:#888;">GitHub Token</label>
+                    <input id="cfg-gist-token" type="password" placeholder="ghp_..." style="background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.8rem;width:100%;">
                 </div>
                 <div class="btn-row">
-                    <button class="btn btn-green" style="padding:11px;font-size:.88rem;" onclick="resolve(true)">✅ CORRECTO</button>
-                    <button class="btn btn-red" style="padding:11px;font-size:.88rem;" onclick="resolve(false)">❌ ERROR</button>
+                    <button class="btn btn-neon" onclick="saveGistConfig()">💾 Guardar</button>
+                    <button class="btn btn-dark" onclick="createGist()">✨ Crear Gist</button>
                 </div>
-                <div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--border);">
-                    <div class="section-title" style="margin-bottom:4px;">Sin suspenso</div>
+                <div id="gist-status" style="font-size:.68rem;color:#555;margin-top:5px;"></div>
+            </div>
+        </div>
+
+        <!-- ⑫ PELIGRO — colapsable -->
+        <div class="section collapsible">
+            <div class="section-title toggle-btn" style="color:var(--red);opacity:1;" onclick="toggleSection(this)">⚠️ Peligro <span class="chevron">▼</span></div>
+            <div class="collapsible-body" style="display:none;">
+                <button class="btn btn-dark" style="width:100%;margin-bottom:6px;" onclick="document.getElementById('reset-confirm').style.display='block'">🗑 Resetear Partida</button>
+                <div id="reset-confirm">
+                    <p>¿Borrar puntos y preguntas usadas?</p>
                     <div class="btn-row">
-                        <button class="btn btn-green" style="opacity:.7;" onclick="resolve(true, true)">⚡✅ Directo</button>
-                        <button class="btn btn-red"   style="opacity:.7;" onclick="resolve(false,true)">⚡❌ Directo</button>
+                        <button class="btn btn-red" onclick="resetGame()">SÍ</button>
+                        <button class="btn btn-dark" onclick="document.getElementById('reset-confirm').style.display='none'">No</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- COMODINES -->
-        <div class="section">
-            <div class="section-title">🃏 Comodines</div>
-            <div style="display:flex;gap:5px;align-items:center;margin-bottom:7px;">
-                <span style="font-size:.7rem;color:#888;">Seg:</span>
-                <input type="number" id="comodin-sec" value="30">
-            </div>
-            <div class="pts-grid" style="margin-bottom:5px;">
-                <button class="btn" style="background:#003d1a;color:#00ff88;border:1px solid #00ff88;" onclick="lanzarComodin('llamada')">📞 Llamada</button>
-                <button class="btn" style="background:#1a1a00;color:#ffc300;border:1px solid #ffc300;" onclick="lanzarComodin('publico')">👥 Público</button>
-                <button class="btn" style="background:#1a001a;color:#cc44ff;border:1px solid #cc44ff;" onclick="lanzarComodin('5050')">✂️ 50/50</button>
-            </div>
-            <button class="btn btn-dark" style="width:100%;font-size:.7rem;" onclick="cerrarComodin()">✖ Cerrar comodín</button>
-        </div>
-
-        <!-- PUNTOS MANUALES -->
-        <div class="section">
-            <div class="section-title">✏️ Puntos manuales</div>
-            <input type="number" id="pts-amount" value="200" placeholder="pts">
-            <div class="pts-grid">
-                <button class="pts-btn" style="border-color:var(--purple);color:var(--purple);" onclick="addPts(0)">+ K</button>
-                <button class="pts-btn" style="border-color:var(--pink);color:var(--pink);" onclick="addPts(1)">+ M</button>
-                <button class="pts-btn" style="border-color:var(--blue);color:var(--blue);" onclick="addPts(2)">+ J</button>
-                <button class="pts-btn" style="border-color:var(--purple);color:var(--purple);opacity:.5;" onclick="addPts(0,true)">− K</button>
-                <button class="pts-btn" style="border-color:var(--pink);color:var(--pink);opacity:.5;" onclick="addPts(1,true)">− M</button>
-                <button class="pts-btn" style="border-color:var(--blue);color:var(--blue);opacity:.5;" onclick="addPts(2,true)">− J</button>
-            </div>
-        </div>
-
-        <!-- MÚSICA -->
-        <div class="section">
-            <div class="section-title">🎵 Música — Adivina la canción</div>
-            <div style="margin-bottom:6px;">
-                <input id="music-file" type="file" accept="audio/*" multiple style="width:100%;background:#111;color:#aaa;border:1px solid var(--border);border-radius:8px;padding:5px;font-size:.7rem;cursor:pointer;">
-            </div>
-            <div id="music-list" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;"></div>
-            <div id="music-controls" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                <div style="font-size:.72rem;color:var(--neon);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="music-now-playing">—</div>
-                <div style="display:flex;gap:5px;align-items:center;margin-bottom:6px;">
-                    <span style="font-size:.7rem;color:#888;">Desde seg:</span>
-                    <input type="number" id="music-start" value="0" min="0" style="width:60px;background:#111;color:white;border:1px solid var(--border);border-radius:6px;padding:4px;font-size:.8rem;text-align:center;">
-                </div>
-                <div class="btn-row" style="margin-bottom:6px;">
-                    <button class="btn btn-green" onclick="musicPlay()">▶ Play</button>
-                    <button class="btn btn-dark"  onclick="musicPause()">⏸</button>
-                    <button class="btn btn-red"   onclick="musicStop()">⏹</button>
-                </div>
-                <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.8"
-                    style="width:100%;accent-color:var(--gold);"
-                    oninput="pub('tv',{type:'music_volume',vol:parseFloat(this.value)})">
-                <div style="font-size:.65rem;color:#555;text-align:center;margin-top:3px;">Volumen</div>
-            </div>
-        </div>
-
-        <!-- EFECTOS TV -->
-        <div class="section">
-            <div class="section-title">🎬 Efectos TV</div>
-            <div class="tv-grid2" style="margin-bottom:5px;">
-                <button class="btn btn-dark" onclick="tvEffect('spotlight')">🔦 Spotlight</button>
-                <button class="btn btn-dark" onclick="tvEffect('confetti')">🎊 Confetti</button>
-                <button class="btn btn-dark" onclick="tvEffect('blackout')">⬛ Blackout</button>
-                <button class="btn btn-dark" onclick="tvEffect('shake')">📳 Shake</button>
-            </div>
-        </div>
-
-        <!-- ESCENAS ESPECIALES -->
-        <div class="section">
-            <div class="section-title">🎭 Escenas especiales</div>
-            <div class="tv-grid2" style="margin-bottom:5px;">
-                <button class="btn" style="background:#1a0030;color:#cc44ff;border:1px solid #cc44ff;" onclick="pubScene('ganador')">🏆 Ganador</button>
-                <button class="btn" style="background:#001a30;color:var(--neon);border:1px solid var(--neon);" onclick="pubScene('intro')">🎬 Intro</button>
-                <button class="btn" style="background:#1a1a00;color:var(--gold);border:1px solid var(--gold);" onclick="pubScene('doble')">⚡ Doble pts</button>
-                <button class="btn" style="background:#1a0000;color:var(--red);border:1px solid var(--red);" onclick="pubScene('final')">🔥 Final</button>
-            </div>
-        </div>
-
-        <!-- MÚSICA DE AMBIENTE -->
-        <div class="section">
-            <div class="section-title">🎵 Ambiente</div>
-            <div class="tv-grid2">
-                <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'tension'})">😰 Tensión</button>
-                <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'celebration'})">🎉 Celebración</button>
-                <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'thinking'})">🤔 Pensando</button>
-                <button class="btn btn-dark" onclick="pub('tv',{type:'ambient',mood:'stop'})">⏹ Parar</button>
-            </div>
-        </div>
-
-        <!-- NOTAS -->
-        <div class="section">
-            <div class="section-title">📝 Notas del presentador</div>
-            <textarea id="notes-area" rows="4" placeholder="Apuntes, orden del show, recordatorios..."></textarea>
-        </div>
-
-        <!-- HISTORIAL -->
-        <div class="section">
-            <div class="section-title">📋 Historial de ronda</div>
-            <div id="hist-list" style="max-height:120px;overflow-y:auto;"></div>
-            <button class="btn btn-dark" style="width:100%;margin-top:5px;font-size:.65rem;" onclick="document.getElementById('hist-list').innerHTML=''">Limpiar</button>
-        </div>
-
-        <!-- SINCRONIZACIÓN GIST -->
-        <div class="section">
-            <div class="section-title">☁️ Sincronización (GitHub Gist)</div>
-            <div class="field" style="margin-bottom:6px;">
-                <label style="font-size:.65rem;color:#888;">Gist ID</label>
-                <input id="cfg-gist-id" placeholder="abc123..." value="" style="background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.8rem;width:100%;">
-            </div>
-            <div class="field" style="margin-bottom:6px;">
-                <label style="font-size:.65rem;color:#888;">GitHub Token</label>
-                <input id="cfg-gist-token" type="password" placeholder="ghp_..." value="" style="background:#111;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.8rem;width:100%;">
-            </div>
-            <div class="btn-row">
-                <button class="btn btn-neon" onclick="saveGistConfig()">💾 Guardar config</button>
-                <button class="btn btn-dark" onclick="createGist()">✨ Crear Gist</button>
-            </div>
-            <div id="gist-status" style="font-size:.68rem;color:#555;margin-top:5px;"></div>
-        </div>
-
-        <!-- RESET -->
-        <div class="section">
-            <div class="section-title">⚠️ Peligro</div>            <div class="btn-row" style="margin-bottom:5px;">
-                <button class="btn btn-dark" onclick="toggleBlackout()">🌑 Blackout TV</button>
-                <button class="btn btn-dark" onclick="pub('tv',{type:'message',text:'¡VOLVEMOS EN UN MOMENTO!'})">⏸ Pausa show</button>
-            </div>
-            <button class="btn btn-dark" style="width:100%;" onclick="document.getElementById('reset-confirm').style.display='block'">🗑 Resetear Partida</button>
-            <div id="reset-confirm">
-                <p>¿Borrar puntos y preguntas usadas?</p>
-                <div class="btn-row">
-                    <button class="btn btn-red" onclick="resetGame()">SÍ</button>
-                    <button class="btn btn-dark" onclick="document.getElementById('reset-confirm').style.display='none'">No</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    </div><!-- /ctrl-panel -->
+</div><!-- /body-wrap -->
 
 <!-- EDITOR TAB -->
 <div id="editor-wrap">
@@ -456,12 +519,56 @@ ably.connection.on('connected', () => {
 
 function pub(ch, d) { channel.publish(ch, d); }
 
+// ── COLAPSABLES ──
+function toggleSection(btn) {
+    const body = btn.nextElementSibling;
+    const open = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    btn.classList.toggle('open', !open);
+}
+
+// ── DOBLE PUNTOS ──
+let doublePoints = false;
+function toggleDouble() {
+    doublePoints = !doublePoints;
+    document.getElementById('double-indicator').style.display = doublePoints ? 'block' : 'none';
+    pub('tv', {type:'message', text: doublePoints ? '⚡ ¡PUNTOS DOBLES ACTIVADOS!' : 'Puntos dobles desactivados'});
+}
+
+// ── RONDA ──
+let roundNum = 1;
+function nextRound() {
+    roundNum++;
+    document.getElementById('round-badge').innerText = 'R'+roundNum;
+    pub('tv', {type:'scene', scene:'intro'});
+}
+
 // ── TABS ──
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='juego')||(i===1&&tab==='editor')));
     document.getElementById('body-wrap').style.display  = tab==='juego'  ? 'flex' : 'none';
     document.getElementById('editor-wrap').style.display = tab==='editor' ? 'flex' : 'none';
     if(tab==='editor') renderEditor();
+}
+
+// ── VISTA MÓVIL: alternar tablero / controles ──
+let mobileShowingBoard = true;
+function toggleMobileView() {
+    mobileShowingBoard = !mobileShowingBoard;
+    const board = document.getElementById('board-wrap');
+    const panel = document.getElementById('ctrl-panel');
+    const fab   = document.getElementById('fab-toggle');
+    if(mobileShowingBoard) {
+        board.classList.remove('mobile-hidden');
+        panel.classList.add('mobile-hidden');
+        fab.innerText = '🎮';
+        fab.title = 'Ver controles';
+    } else {
+        board.classList.add('mobile-hidden');
+        panel.classList.remove('mobile-hidden');
+        fab.innerText = '📋';
+        fab.title = 'Ver tablero';
+    }
 }
 
 // ── SCORES ──
@@ -652,6 +759,8 @@ function selectQuestion(cat, pts, catIdx, qId, cellEl) {
     pub('tv', {type:'open_q', cat, pts, catIdx, txt:q.txt, o1:q.o1, o2:q.o2, o3:q.o3, o4:q.o4});
     pub('status','close');
     stopTimer();
+    // En móvil, ir automáticamente a los controles
+    if(window.innerWidth < 768 && mobileShowingBoard) toggleMobileView();
 }
 
 function syncTV() {
@@ -726,9 +835,11 @@ channel.subscribe('pulso-web', (m) => {
 
 function resolve(ok, direct=false) {
     if(!lastP) return alert('Nadie pulsó');
-    const pts = parseInt(curQ.pts);
-    scores[lastP.id] += ok ? pts : -pts;
-    localStorage.setItem('juego_puntos', JSON.stringify(scores));
+    const pts = parseInt(curQ.pts) * (doublePoints ? 2 : 1);
+    if(!rehearsalMode) {
+        scores[lastP.id] += ok ? pts : -pts;
+        localStorage.setItem('juego_puntos', JSON.stringify(scores));
+    }
     pub('tv', {type: direct ? 'feedback_direct' : 'feedback', correct:ok});
     if(ok && direct) pub('tv', {type:'effect', effect:'confetti'});
     updateAdminScores();
@@ -831,6 +942,98 @@ function musicRemove(name) {
         musicCurrentKey = null;
     }
     renderMusicList();
+}
+
+// ── EXPORT / IMPORT ──
+function exportarPreguntas() {
+    if(!questions.length) return alert('No hay preguntas para exportar');
+    const blob = new Blob([JSON.stringify(questions, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `nexus_preguntas_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function importarPreguntas(input) {
+    const file = input.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if(!Array.isArray(data)) throw new Error('Formato inválido');
+            if(!confirm(`¿Importar ${data.length} preguntas? Esto reemplazará las actuales.`)) return;
+            questions = data;
+            saveQuestions();
+            rebuildFromQuestions();
+            buildBoard();
+            syncTV();
+            renderEditor();
+            alert(`✅ ${data.length} preguntas importadas`);
+        } catch(err) {
+            alert('❌ Archivo inválido: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    input.value = ''; // reset para poder importar el mismo archivo otra vez
+}
+
+// ── QRs con IP local ──
+async function mostrarQRs() {
+    let ip = null;
+    // Intentar obtener IP local via WebRTC
+    try {
+        const pc = new RTCPeerConnection({iceServers:[]});
+        pc.createDataChannel('');
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await new Promise(r => setTimeout(r, 500));
+        const sdp = pc.localDescription?.sdp || '';
+        const match = sdp.match(/candidate:.+udp\s+\d+\s+([\d.]+)/i);
+        if(match) ip = match[1];
+        pc.close();
+    } catch(e) {}
+    pub('tv', {type:'show_qrs', ip});
+}
+
+// ── MODO ENSAYO ──
+let rehearsalMode = false;
+function toggleRehearsal() {
+    rehearsalMode = !rehearsalMode;
+    const btn = document.getElementById('btn-rehearsal');
+    btn.style.background = rehearsalMode ? '#ff6600' : '#331100';
+    btn.style.color = rehearsalMode ? '#000' : '#ff6600';
+    btn.innerText = rehearsalMode ? '🎭 ENSAYO ON' : '🎭 Ensayo';
+    pub('tv', {type: rehearsalMode ? 'rehearsal_on' : 'rehearsal_off'});
+}
+
+// ── CUENTA ATRÁS ──
+function lanzarCuentaAtras() {
+    const from = parseInt(prompt('¿Desde cuánto? (ej: 3)', '3')) || 3;
+    pub('tv', {type:'countdown', from});
+}
+
+// ── PODIO ──
+function mostrarPodio() {
+    const playerNames = ['Kinverlys','María','Joise'];
+    const colors = ['#a020f0','#ff69b4','#4488ff'];
+    const ranked = scores
+        .map((pts, i) => ({name: playerNames[i], pts, color: colors[i]}))
+        .sort((a,b) => b.pts - a.pts);
+    pub('tv', {type:'show_podio', names: ranked});
+}
+
+// ── DESEMPATE ──
+function lanzarDesempate() {
+    const playerNames = ['Kinverlys','María','Joise'];
+    const maxPts = Math.max(...scores);
+    const tied = scores
+        .map((pts,i) => pts === maxPts ? playerNames[i] : null)
+        .filter(Boolean);
+    if(tied.length < 2) return alert('No hay empate');
+    pub('tv', {type:'tiebreak', names: tied});
+    pub('status','open');
 }
 
 // ── ESCENAS ESPECIALES ──
