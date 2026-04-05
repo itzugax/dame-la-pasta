@@ -1,8 +1,6 @@
-const CACHE = 'nexus-v2';
+const CACHE = 'nexus-v3';
 const PRECACHE = [
-    '/',
     '/tv.html',
-    '/admin.html',
     '/player.html',
     '/suspenso.mp3',
     '/correcto.mp3',
@@ -11,6 +9,9 @@ const PRECACHE = [
     'https://cdn.ably.com/lib/ably.min-1.js',
     'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@900&display=swap',
 ];
+
+// Nunca cachear el admin — siempre debe ser la versión más reciente
+const NEVER_CACHE = ['/admin.html', '/sw.js'];
 
 self.addEventListener('install', e => {
     self.skipWaiting();
@@ -28,6 +29,12 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+    const url = new URL(e.request.url);
+    // Admin y SW siempre desde red
+    if(NEVER_CACHE.some(p => url.pathname === p)) {
+        e.respondWith(fetch(e.request));
+        return;
+    }
     e.respondWith(
         caches.match(e.request).then(cached => {
             if(cached) return cached;
