@@ -225,12 +225,13 @@
         <!-- ② PULSADORES — siempre visible -->
         <div class="section">
             <div class="btn-row">
-                <button class="btn btn-green" style="font-size:.95rem;" onclick="pub('status','open')">🟢 HABILITAR</button>
+                <button class="btn btn-green" style="font-size:.95rem;" onclick="habilitarPulsadores()">🟢 HABILITAR</button>
                 <button class="btn btn-red"   style="font-size:.95rem;" onclick="pub('status','close')">🔴 BLOQUEAR</button>
             </div>
             <div class="btn-row" style="margin-top:5px;">
                 <button class="btn btn-dark" onclick="lanzarCuentaAtras()" style="font-size:.8rem;">3️⃣ Cuenta atrás</button>
             </div>
+            <div id="timing-list" style="margin-top:6px;"></div>
         </div>
 
         <!-- ③ PREGUNTA ACTIVA — visible cuando hay pregunta -->
@@ -580,7 +581,6 @@ let cats = [], curQ = null, lastP = null, allQuestions = {};
 let usedQs = [];
 let timerInterval = null, timerSec = 0;
 let questions = [];
-let playerStreaks = [0,0,0];
 let ruletaMult = 1;
 let apuestaActive = null;
 let roboActive = false;
@@ -931,7 +931,27 @@ function stopTimer(silent=false) {
 }
 
 // ── PULSADORES ──
+let openTime = null;
+let allPulsos = [];
+
+function habilitarPulsadores() {
+    openTime = Date.now();
+    allPulsos = [];
+    document.getElementById('timing-list').innerHTML = '';
+    channel.publish('status', 'open');
+}
+
 channel.subscribe('pulso-web', (m) => {
+    const elapsed = openTime ? ((Date.now() - openTime) / 1000).toFixed(2) : '?';
+    allPulsos.push({name: m.data.name, elapsed});
+    const list = document.getElementById('timing-list');
+    if(list) {
+        const isFirst = allPulsos.length === 1;
+        const item = document.createElement('div');
+        item.style.cssText = `font-size:.75rem;padding:3px 6px;border-radius:5px;background:${isFirst?'rgba(0,255,136,.15)':'rgba(100,100,100,.1)'};border-left:3px solid ${isFirst?'var(--green)':'#444'};margin-bottom:2px;color:${isFirst?'var(--green)':'#888'};`;
+        item.innerText = `${isFirst?'🥇':'  '} ${m.data.name}: ${elapsed}s`;
+        list.appendChild(item);
+    }
     if(lastP!==null) return;
     lastP = m.data;
     const who = document.getElementById('who-name');
@@ -958,14 +978,7 @@ function resolve(ok, direct=false) {
         scores[lastP.id] += ok ? pts : -pts;
         localStorage.setItem('juego_puntos', JSON.stringify(scores));
     }
-    // Rachas
-    if(ok) {
-        playerStreaks[lastP.id]++;
-        if(playerStreaks[lastP.id] >= 2) {
-            pub('tv', {type:'racha', name: lastP.name, color: playerColors[lastP.id], count: playerStreaks[lastP.id]});
-        }
-    } else {
-        playerStreaks[lastP.id] = 0;
+    if(!ok) {
         // Robo de turno
         if(roboActive) {
             roboActive = false;

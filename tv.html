@@ -303,13 +303,6 @@
         .musical-notes{font-size:clamp(3rem,8vw,8rem);animation:noteBounce 1s ease-in-out infinite alternate;}
         @keyframes noteBounce{from{transform:translateY(0) rotate(-5deg);}to{transform:translateY(-20px) rotate(5deg);}}
 
-        /* RACHA */
-        #racha-overlay{position:fixed;inset:0;z-index:57000;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
-        #racha-overlay.visible{display:flex;}
-        #racha-text{font-size:clamp(3rem,10vw,12rem);text-align:center;animation:rachaIn .5s cubic-bezier(.34,1.56,.64,1);}
-        #racha-sub{font-size:clamp(1.5rem,4vw,5rem);color:white;letter-spacing:4px;}
-        @keyframes rachaIn{from{transform:scale(0) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
-
         /* INTRO JUGADOR */
         #intro-player-overlay{
             position:fixed;inset:0;z-index:56000;
@@ -591,11 +584,6 @@
     <div class="musical-notes">🎵🎶🎵</div>
     <div style="font-family:'Bebas Neue';font-size:clamp(2rem,6vw,7rem);color:#cc44ff;letter-spacing:4px;text-shadow:0 0 30px #cc44ff;">RONDA MUSICAL</div>
     <div style="font-size:clamp(.8rem,2vw,2rem);color:#888;letter-spacing:3px;">Adivina la canción</div>
-</div>
-
-<div id="racha-overlay">
-    <div id="racha-text">🔥🔥🔥</div>
-    <div id="racha-sub">EN RACHA</div>
 </div>
 
 <div id="intro-player-overlay">
@@ -940,18 +928,6 @@ channel.subscribe('tv', (msg) => {
     if(d.type === 'musical_round') {
         document.getElementById('musical-overlay').classList.add('visible');
         setTimeout(()=>document.getElementById('musical-overlay').classList.remove('visible'), d.dur||5000);
-    }
-
-    if(d.type === 'racha') {
-        const ov = document.getElementById('racha-overlay');
-        const txt = document.getElementById('racha-text');
-        const sub = document.getElementById('racha-sub');
-        const fires = ['','🔥','🔥🔥','🔥🔥🔥','💥🔥💥'];
-        txt.innerText = (fires[Math.min(d.count,4)] || '🔥') + ' ' + d.name;
-        txt.style.color = d.color;
-        sub.innerText = `¡${d.count} EN RACHA!`;
-        ov.classList.add('visible');
-        setTimeout(()=>ov.classList.remove('visible'), 3000);
     }
 
     if(d.type === 'intro_player') {

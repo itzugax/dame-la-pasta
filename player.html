@@ -22,7 +22,10 @@
     </style>
 </head>
 <body>
-    <button id="btn" disabled>BLOQUEADO</button>
+<div id="fs-prompt" onclick="enterFS()" style="position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+    <div style="font-family:sans-serif;font-size:clamp(1.5rem,6vw,3rem);color:#555;text-align:center;letter-spacing:2px;">TOCA PARA EMPEZAR</div>
+</div>
+<button id="btn" disabled>BLOQUEADO</button>
 
     <script>
 const ably = new Ably.Realtime('hfiiHQ.aSZm9g:kMhwAKjhl_4t-ALEqCv_M_55VJlSYMKunV-PLoJJeVM');
@@ -57,11 +60,16 @@ channel.subscribe('tv', (msg) => {
 });
 
 btn.onclick = () => {
-    channel.publish('pulso-web', { id: pId, name: names[pId] });
+    channel.publish('pulso-web', { id: pId, name: names[pId], ts: Date.now() });
     btn.disabled = true;
     btn.classList.remove('active');
     btn.innerText = "¡ESPERANDO!";
 };
+
+function enterFS() {
+    document.documentElement.requestFullscreen().catch(()=>{});
+    document.getElementById('fs-prompt').style.display = 'none';
+}
     </script>
 </body>
 </html>
