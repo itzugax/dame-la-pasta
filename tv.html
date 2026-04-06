@@ -35,32 +35,48 @@
         #main-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: clamp(4px, 0.8vw, 12px);
-            padding: clamp(6px, 1.2vw, 20px);
+            gap: clamp(16px, 2.2vw, 32px);
+            padding: clamp(16px, 2.2vw, 32px);
             flex: 1; min-height: 0;
+            background: #0a0e8a;
         }
-        .col-cat { display: flex; flex-direction: column; gap: clamp(4px, 0.6vh, 10px); min-height: 0; }
+        .col-cat { display: flex; flex-direction: column; gap: clamp(12px, 1.8vh, 24px); min-height: 0; }
         .cat-header {
-            background: var(--bg);
             color: white;
             text-align: center;
-            font-size: clamp(0.9rem, 2vw, 2.2rem);
-            padding: 0.8vh 0.3vw;
-            line-height: 1.1;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(1.4rem, 2.5vw, 3rem);
+            line-height: 1.15;
             flex-shrink: 0;
+            height: clamp(64px, 11vh, 110px);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            word-break: break-word;
+            padding: 0 6px;
+            text-shadow: 0 0 12px rgba(255,255,255,0.6), 0 2px 6px rgba(0,0,0,0.9);
         }
         .q-cell {
-            background: var(--cell);
-            border: 3px solid var(--border);
-            border-radius: clamp(6px, 1vw, 16px);
-            color: var(--gold);
-            font-size: clamp(1rem, 3.5vw, 4.5rem);
+            background: linear-gradient(180deg, #2244dd 0%, #0d1aaa 60%, #0a1490 100%);
+            border: 2px solid #55ccff;
+            outline: none;
+            border-radius: clamp(12px, 1.8vw, 28px);
+            color: #f5c518;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(1.6rem, 4.5vw, 6.5rem);
             flex: 1; min-height: 0;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 10px rgba(0,170,255,0.3), inset 0 0 20px rgba(0,0,80,0.5);
-            transition: 0.4s;
+            box-shadow:
+                0 0 8px rgba(85,204,255,0.4),
+                inset 0 2px 8px rgba(255,255,255,0.1),
+                inset 0 -2px 8px rgba(0,0,80,0.4);
+            text-shadow: 0 0 14px rgba(245,197,24,0.8), 0 2px 4px rgba(0,0,0,0.7);
+            transition: 0.25s;
         }
-        .q-cell.used { opacity: 0.18; pointer-events: none; filter: grayscale(0.4); }
+        .q-cell.used { opacity: 0.15; pointer-events: none; filter: grayscale(0.5); box-shadow: none; outline: none; }
+        .q-cell:not(.used):not(.no-q):hover {
+            box-shadow: 0 0 16px rgba(85,204,255,0.7), inset 0 2px 8px rgba(255,255,255,0.1);
+            transform: scale(1.04);
+        }
 
         /* MARCADORES */
         #scores-bar {
@@ -799,7 +815,41 @@ channel.subscribe('tv', (msg) => {
         const qId = `q-${d.catIdx}-${d.pts}`;
         if(!usedQuestions.includes(qId)) usedQuestions.push(qId);
         const cell = document.getElementById(qId);
-        if(cell) cell.classList.add('used');
+
+        // Animación de selección + sonido antes de abrir la escena
+        if(cell) {
+            playSelectSound();
+            cell.style.transition = 'none';
+            let flash = 0;
+            const flashInterval = setInterval(() => {
+                flash++;
+                if(flash % 2 === 0) {
+                    // Estado normal
+                    cell.style.background = 'linear-gradient(180deg, #2244dd 0%, #0d1aaa 60%, #0a1490 100%)';
+                    cell.style.boxShadow = '0 0 8px rgba(85,204,255,0.4)';
+                    cell.style.transform = 'scale(1)';
+                } else {
+                    // Destello brillante — mismo color pero mucho más luminoso
+                    cell.style.background = 'linear-gradient(180deg, #4466ff 0%, #2244ee 50%, #1133cc 100%)';
+                    cell.style.boxShadow = '0 0 40px rgba(245,197,24,0.9), 0 0 80px rgba(245,197,24,0.5), inset 0 0 20px rgba(255,220,50,0.2)';
+                    cell.style.transform = 'scale(1.06)';
+                }
+                if(flash >= 8) {
+                    clearInterval(flashInterval);
+                    cell.classList.add('used');
+                    cell.style.background = '';
+                    cell.style.color = '';
+                    cell.style.boxShadow = '';
+                    cell.style.transition = '';
+                    openQuestion(d);
+                }
+            }, 140);
+        } else {
+            openQuestion(d);
+        }
+    }
+
+    function openQuestion(d) {
         document.getElementById('scene-question').classList.add('active');
         document.getElementById('scene-question').style.display = 'flex';
         document.getElementById('splash-cat').innerText = d.cat;
@@ -817,8 +867,9 @@ channel.subscribe('tv', (msg) => {
         ['op-1-card','op-2-card','op-3-card','op-4-card'].forEach(id => {
             const el = document.getElementById(id);
             el.className = 'op-card';
-            el.style.cssText = ''; // limpia cualquier inline del 50/50
-        });    }
+            el.style.cssText = '';
+        });
+    }
 
     if(d.type === 'show_txt') {
         document.getElementById('splash-cat').className = 'cat-mini';
@@ -842,6 +893,8 @@ channel.subscribe('tv', (msg) => {
 
     if(d.type === 'show_name') {
         const who = document.getElementById('who-pressed');
+        // Si ya hay un nombre mostrado, ignorar el segundo pulso
+        if(who.classList.contains('show-name')) return;
         who.innerText = d.name;
         who.style.color = colors[d.id];
         who.style.opacity = '1';
@@ -1563,6 +1616,22 @@ function playPulso(color) {
 function playSuspenso()   { sfx.suspenso.currentTime=0; sfx.suspenso.play(); }
 function playCorrecto()   { sfx.suspenso.pause(); sfx.correcto.currentTime=0; sfx.correcto.play(); }
 function playIncorrecto() { sfx.suspenso.pause(); sfx.incorrecto.currentTime=0; sfx.incorrecto.play(); }
+
+function playSelectSound() {
+    // Sonido de selección: 4 notas ascendentes rápidas
+    const notes = [440, 554, 659, 880];
+    notes.forEach((freq, i) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.type = 'sine';
+        o.frequency.value = freq;
+        const t = audioCtx.currentTime + i * 0.1;
+        g.gain.setValueAtTime(0.25, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        o.start(t); o.stop(t + 0.13);
+    });
+}
 
 function unlockAudio() {
     const title = document.getElementById('unlock-title');
